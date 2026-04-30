@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>SOA STOCK — Inventory Management System</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<!-- SheetJS for Excel export -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  :root {
+    --bg: #f2f5f9;
+    --surface: #ffffff;
+    --surface2: #f7f9fc;
+    --surface3: #edf1f7;
+    --border: rgba(30,60,120,0.1);
+    --border2: rgba(30,60,120,0.2);
+    --accent: #1d4ed8;
+    --accent-lt: #3b82f6;
+    --accent2: #0369a1;
+    --accent3: #6d28d9;
+    --green: #065f46;
+    --green-lt: #059669;
+    --yellow: #92400e;
+    --yellow-lt: #d97706;
+    --red: #991b1b;
+    --red-lt: #dc2626;
+    --teal: #0e7490;
+    --text: #0f172a;
+    --text2: #475569;
+    --text3: #94a3b8;
+    --radius: 12px;
+    --radius-sm: 7px;
+    --shadow: 0 1px 8px rgba(15,23,42,0.07), 0 0 0 1px rgba(15,23,42,0.04);
+    --shadow-md: 0 4px 20px rgba(15,23,42,0.1), 0 0 0 1px rgba(15,23,42,0.05);
+    --font: 'IBM Plex Sans Thai','IBM Plex Sans',sans-serif;
+    --font-mono: 'IBM Plex Mono',monospace;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { font-size:16px; }
+  body { font-family:var(--font); background:var(--bg); color:var(--text); min-height:100vh; overflow-x:hidden; line-height:1.6; }
+
+  /* ── NAV ── */
+  nav {
+    position:sticky; top:0; z-index:200;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:0 28px; height:58px;
+    background:#fff; border-bottom:2px solid #1d4ed8;
+    box-shadow:0 2px 12px rgba(29,78,216,0.08);
+  }
+  .nav-brand { display:flex; align-items:baseline; gap:10px; }
+  .nav-logo {
+    font-family:var(--font); font-weight:700; font-size:1.25rem;
+    letter-spacing:0.06em; color:#1d4ed8;
+  }
+  .nav-logo-sub {
+    font-size:0.7rem; font-weight:500; color:var(--text3);
+    letter-spacing:0.12em; text-transform:uppercase;
+  }
+  .nav-divider { width:1px; height:20px; background:var(--border2); }
+  .nav-tabs { display:flex; gap:2px; }
+  .nav-tab {
+    padding:6px 18px; border-radius:6px;
+    font-size:0.82rem; font-weight:500; color:var(--text2);
+    cursor:pointer; transition:all 0.15s; border:none;
+    background:transparent; font-family:var(--font);
+    letter-spacing:0.01em;
+  }
+  .nav-tab.active { background:var(--accent); color:#fff; }
+  .nav-tab:hover:not(.active) { background:var(--surface3); color:var(--text); }
+  .nav-right { display:flex; align-items:center; gap:10px; }
+  .btn-add {
+    display:flex; align-items:center; gap:7px;
+    padding:8px 20px; background:var(--accent); border:none;
+    border-radius:var(--radius-sm); color:#fff;
+    font-family:var(--font); font-weight:600; font-size:0.82rem;
+    cursor:pointer; transition:all 0.15s;
+    box-shadow:0 2px 8px rgba(29,78,216,0.25); white-space:nowrap;
+    letter-spacing:0.02em;
+  }
+  .btn-add:hover { background:#1e40af; box-shadow:0 4px 14px rgba(29,78,216,0.35); }
+  .btn-add svg { width:13px; height:13px; }
+  .btn-export {
+    display:flex; align-items:center; gap:7px;
+    padding:8px 18px; background:#fff;
+    border:1.5px solid var(--border2); border-radius:var(--radius-sm);
+    color:var(--text2); font-family:var(--font); font-weight:500;
+    font-size:0.82rem; cursor:pointer; transition:all 0.15s; white-space:nowrap;
+  }
+  .btn-export:hover { border-color:var(--accent); color:var(--accent); background:#eff6ff; }
+  .btn-export svg { width:13px; height:13px; }
+
+  /* ── PAGES ── */
+  .page { display:none; } .page.active { display:block; }
+
+  /* ── DASHBOARD ── */
+  .dashboard { position:relative; z-index:1; padding:26px 30px; max-width:1440px; margin:0 auto; }
+  .page-header { display:flex; align-items:flex-end; justify-content:space-between; margin-bottom:22px; flex-wrap:wrap; gap:8px; }
+  .page-header h1 { font-size:1.6rem; font-weight:700; color:var(--text); letter-spacing:-0.01em; }
+  .page-header p { font-size:0.85rem; color:var(--text3); margin-top:3px; }
+
+  /* KPI */
+  .kpi-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(195px,1fr)); gap:14px; margin-bottom:20px; }
+  .kpi-card {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:var(--radius); padding:20px 22px;
+    position:relative; overflow:hidden;
+    transition:transform 0.15s,box-shadow 0.15s; box-shadow:var(--shadow);
+  }
+  .kpi-card:hover { transform:translateY(-1px); box-shadow:var(--shadow-md); }
+  .kpi-stripe { position:absolute; top:0; left:0; right:0; height:4px; }
+  .kpi-card.c-blue .kpi-stripe { background:linear-gradient(90deg,#1d4ed8,#3b82f6); }
+  .kpi-card.c-teal .kpi-stripe { background:linear-gradient(90deg,#0e7490,#06b6d4); }
+  .kpi-card.c-green .kpi-stripe { background:linear-gradient(90deg,#065f46,#059669); }
+  .kpi-card.c-purple .kpi-stripe { background:linear-gradient(90deg,#6d28d9,#8b5cf6); }
+  .kpi-card.c-amber .kpi-stripe { background:linear-gradient(90deg,#92400e,#d97706); }
+  .kpi-card.c-red .kpi-stripe { background:linear-gradient(90deg,#991b1b,#ef4444); }
+  .kpi-icon { width:40px; height:40px; border-radius:10px; display:flex; align-items:center; justify-content:center; margin-bottom:12px; font-size:1.15rem; }
+  .kpi-card.c-blue .kpi-icon { background:#eff6ff; }
+  .kpi-card.c-teal .kpi-icon { background:#ecfeff; }
+  .kpi-card.c-green .kpi-icon { background:#ecfdf5; }
+  .kpi-card.c-purple .kpi-icon { background:#f5f3ff; }
+  .kpi-card.c-amber .kpi-icon { background:#fffbeb; }
+  .kpi-card.c-red .kpi-icon { background:#fef2f2; }
+  .kpi-label { font-size:0.75rem; color:var(--text2); text-transform:uppercase; letter-spacing:0.09em; font-weight:700; margin-bottom:5px; }
+  .kpi-value { font-family:var(--font-mono); font-size:2rem; font-weight:600; line-height:1; color:var(--text); }
+  .kpi-value.sm { font-size:1.25rem; }
+  .kpi-sub { font-size:0.73rem; color:var(--text3); margin-top:5px; }
+
+  /* Charts row */
+  .charts-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px; }
+  @media(max-width:800px){ .charts-row{grid-template-columns:1fr;} }
+  .chart-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:22px; box-shadow:var(--shadow); }
+  .card-title { font-size:0.88rem; font-weight:700; color:var(--text); letter-spacing:0.03em; text-transform:uppercase; margin-bottom:16px; display:flex; align-items:center; gap:8px; }
+  .card-title span { color:var(--text3); font-weight:400; text-transform:none; font-size:0.78rem; letter-spacing:0; }
+
+  /* Regional cards */
+  .regional-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(270px,1fr)); gap:14px; }
+  .regional-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:18px; box-shadow:var(--shadow); transition:transform 0.15s,box-shadow 0.15s; position:relative; overflow:hidden; }
+  .regional-card:hover { transform:translateY(-1px); box-shadow:var(--shadow-md); }
+  .reg-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+  .reg-name { font-weight:700; font-size:1rem; color:var(--text); display:flex; align-items:center; gap:6px; }
+  .reg-pill { font-size:0.7rem; font-weight:600; padding:3px 10px; border-radius:99px; background:#eff6ff; color:var(--accent); border:1px solid #bfdbfe; letter-spacing:0.04em; }
+  .reg-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:12px; }
+  .reg-stat { background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:10px 12px; }
+  .reg-stat-lbl { font-size:0.68rem; color:var(--text3); text-transform:uppercase; letter-spacing:0.07em; font-weight:600; margin-bottom:3px; }
+  .reg-stat-val { font-family:var(--font-mono); font-weight:600; font-size:1rem; color:var(--text); }
+  .reg-rank { display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px; border-radius:6px; font-family:var(--font-mono); font-size:0.8rem; font-weight:700; background:var(--surface3); color:var(--text2); flex-shrink:0; border:1px solid var(--border); }
+  .reg-rank.r1 { background:#fef2f2; color:#dc2626; border-color:#fecaca; }
+  .reg-rank.r2 { background:#fff7ed; color:#d97706; border-color:#fed7aa; }
+  .reg-rank.r3 { background:#fffbeb; color:#ca8a04; border-color:#fde68a; }
+  .reg-rank.r4 { background:#f0fdf4; color:#16a34a; border-color:#bbf7d0; }
+  .reg-prog-row { display:flex; align-items:center; gap:8px; font-size:0.75rem; color:var(--text3); }
+  .reg-prog-track { flex:1; height:5px; background:var(--surface3); border-radius:99px; overflow:hidden; }
+  .reg-prog-fill { height:100%; border-radius:99px; background:linear-gradient(90deg,#1d4ed8,#3b82f6); }
+
+  /* Store table card */
+  .store-table-wrap { overflow:auto; border-radius:var(--radius-sm); }
+  .store-table { width:100%; border-collapse:collapse; font-size:0.85rem; min-width:600px; }
+  .store-table thead th { padding:11px 14px; text-align:left; font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:var(--text2); background:var(--surface2); border-bottom:1px solid var(--border); white-space:nowrap; }
+  .store-table thead th.r { text-align:right; }
+  .store-table tbody tr { border-bottom:1px solid rgba(15,23,42,0.04); transition:background 0.12s; }
+  .store-table tbody tr:last-child { border-bottom:none; }
+  .store-table tbody tr:hover { background:#f8faff; }
+  .store-table tbody td { padding:11px 14px; vertical-align:middle; }
+  .store-table tbody td.r { text-align:right; font-family:var(--font-mono); font-size:0.83rem; font-weight:500; }
+  .rank-badge { display:inline-flex; align-items:center; justify-content:center; width:24px; height:24px; border-radius:50%; font-size:0.72rem; font-weight:700; background:var(--surface3); color:var(--text2); }
+  .rank-badge.top1 { background:#fef2f2; color:#dc2626; }
+  .rank-badge.top2 { background:#fff7ed; color:#d97706; }
+  .rank-badge.top3 { background:#fffbeb; color:#ca8a04; }
+  .store-name-cell { font-weight:600; color:var(--text); font-size:0.88rem; }
+  .store-reg-tag { font-size:0.7rem; color:var(--text3); font-weight:400; }
+  .store-diff-bar { height:5px; background:var(--surface3); border-radius:99px; overflow:hidden; margin-top:4px; }
+  .store-diff-fill { height:100%; border-radius:99px; }
+  .fill-neg { background:linear-gradient(90deg,#dc2626,#f87171); }
+  .fill-pos { background:linear-gradient(90deg,#059669,#34d399); }
+
+  /* Donut */
+  .donut-wrap { display:flex; flex-direction:column; gap:18px; }
+  .donut-top { display:flex; align-items:center; gap:22px; }
+  .donut { width:130px; height:130px; flex-shrink:0; }
+  .donut-legend { flex:1; display:flex; flex-direction:column; gap:9px; }
+  .leg-item { display:flex; align-items:center; gap:9px; font-size:0.85rem; color:var(--text2); }
+  .leg-dot { width:10px; height:10px; border-radius:3px; flex-shrink:0; }
+  .leg-val { font-family:var(--font-mono); font-weight:700; color:var(--text); }
+  .leg-pct { font-family:var(--font-mono); font-size:0.78rem; color:var(--text3); margin-left:4px; }
+  /* Stacked bar */
+  .status-bar-wrap { width:100%; }
+  .status-bar-label { font-size:0.72rem; font-weight:600; color:var(--text2); text-transform:uppercase; letter-spacing:0.07em; margin-bottom:8px; }
+  .status-bar { display:flex; height:28px; border-radius:8px; overflow:hidden; gap:2px; }
+  .status-bar-seg { display:flex; align-items:center; justify-content:center; font-size:0.68rem; font-weight:700; color:#fff; transition:flex 0.6s ease; min-width:0; overflow:hidden; white-space:nowrap; }
+  .status-bar-seg.match-seg { background:#059669; }
+  .status-bar-seg.over-seg { background:#d97706; }
+  .status-bar-seg.short-seg { background:#dc2626; }
+  .status-bar-seg.pending-seg { background:#7c3aed; }
+
+  /* ── ITEMS PAGE ── */
+  .items-page { position:relative; z-index:1; padding:24px 28px; max-width:1500px; margin:0 auto; }
+  .items-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; flex-wrap:wrap; gap:12px; }
+  .items-header h1 { font-size:1.3rem; font-weight:700; letter-spacing:-0.01em; }
+  .items-controls { display:flex; gap:7px; align-items:center; flex-wrap:wrap; }
+  .search-box { display:flex; align-items:center; gap:7px; background:#fff; border:1.5px solid var(--border); border-radius:var(--radius-sm); padding:7px 13px; transition:border-color 0.15s; box-shadow:var(--shadow); }
+  .search-box:focus-within { border-color:var(--accent); }
+  .search-box input { background:transparent; border:none; outline:none; color:var(--text); font-family:var(--font); font-size:0.82rem; width:170px; }
+  .search-box input::placeholder { color:var(--text3); }
+  .filter-sel { background:#fff; border:1.5px solid var(--border); border-radius:var(--radius-sm); padding:7px 10px; color:var(--text); font-family:var(--font); font-size:0.8rem; outline:none; cursor:pointer; box-shadow:var(--shadow); }
+  .filter-sel:focus { border-color:var(--accent); }
+  .count-badge { background:var(--surface3); color:var(--text2); font-size:0.68rem; padding:2px 9px; border-radius:99px; font-weight:700; margin-left:8px; font-family:var(--font-mono); }
+
+  /* Table */
+  .table-wrap { background:#fff; border:1px solid var(--border); border-radius:var(--radius); overflow:auto; box-shadow:var(--shadow); }
+  table { width:100%; border-collapse:collapse; font-size:0.78rem; min-width:1250px; }
+  thead th { padding:11px 13px; text-align:left; font-size:0.65rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--text2); border-bottom:2px solid var(--border); background:var(--surface2); white-space:nowrap; }
+  thead th.r { text-align:right; }
+  tbody tr { border-bottom:1px solid rgba(15,23,42,0.04); transition:background 0.12s; }
+  tbody tr:last-child { border-bottom:none; }
+  tbody tr:hover { background:#f8faff; }
+  tbody td { padding:10px 13px; vertical-align:middle; }
+  .td-reg { font-weight:700; font-size:0.74rem; color:#6d28d9; font-family:var(--font); }
+  .td-store { font-weight:600; font-size:0.74rem; color:#0e7490; }
+  .td-zone { font-weight:600; font-size:0.74rem; color:var(--accent); }
+  .td-item { font-weight:600; color:var(--text); }
+  .td-num { font-family:var(--font-mono); font-weight:500; text-align:right; font-size:0.76rem; }
+  .td-num.bold { font-weight:700; }
+  .c-pos { color:var(--green-lt); } .c-neg { color:var(--red-lt); } .c-zero { color:var(--text3); }
+  .badge { display:inline-flex; align-items:center; gap:3px; padding:2px 9px; border-radius:4px; font-size:0.66rem; font-weight:700; letter-spacing:0.05em; text-transform:uppercase; }
+  .badge.match { background:#ecfdf5; color:#065f46; border:1px solid #a7f3d0; }
+  .badge.over  { background:#fffbeb; color:#92400e; border:1px solid #fde68a; }
+  .badge.short { background:#fef2f2; color:#991b1b; border:1px solid #fecaca; }
+  .badge.pending { background:#f5f3ff; color:#5b21b6; border:1px solid #ddd6fe; }
+  .action-btn { background:transparent; border:1px solid var(--border); border-radius:5px; padding:4px 8px; color:var(--text2); cursor:pointer; font-size:0.7rem; transition:all 0.12s; font-family:var(--font); }
+  .action-btn:hover { border-color:var(--accent); color:var(--accent); background:#eff6ff; }
+  .empty-state { text-align:center; padding:60px 20px; color:var(--text3); }
+  .empty-state .icon { font-size:2.5rem; margin-bottom:10px; opacity:0.3; }
+  .empty-state p { font-size:0.85rem; }
+
+  /* ── MODAL ── */
+  .modal-overlay { position:fixed; inset:0; background:rgba(15,23,42,0.5); backdrop-filter:blur(6px); z-index:999; display:none; align-items:center; justify-content:center; padding:16px; }
+  .modal-overlay.open { display:flex; animation:fadeIn 0.18s ease; }
+  @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+  .modal { background:#fff; border:1px solid var(--border2); border-radius:16px; width:100%; max-width:580px; max-height:92vh; overflow-y:auto; box-shadow:0 24px 64px rgba(15,23,42,0.2); animation:slideUp 0.22s cubic-bezier(0.34,1.56,0.64,1); }
+  @keyframes slideUp{from{opacity:0;transform:translateY(18px) scale(0.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+  .modal-header { padding:20px 22px 14px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+  .modal-header h2 { font-size:1rem; font-weight:700; color:var(--text); letter-spacing:-0.01em; }
+  .modal-close { width:30px; height:30px; border-radius:6px; background:var(--surface2); border:1px solid var(--border); color:var(--text2); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:0.9rem; transition:all 0.12s; }
+  .modal-close:hover { background:var(--surface3); color:var(--text); }
+  .modal-body { padding:18px 22px; }
+  .sec-title { font-size:0.66rem; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:var(--accent); margin-bottom:10px; padding-bottom:5px; border-bottom:1px solid var(--border); }
+  .fg { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px; }
+  .fg.cols1 { grid-template-columns:1fr; }
+  .field { display:flex; flex-direction:column; gap:4px; }
+  .field.full { grid-column:1/-1; }
+  .field label { font-size:0.66rem; font-weight:700; color:var(--text2); letter-spacing:0.07em; text-transform:uppercase; }
+  .fi, .fs, .fta { background:var(--surface2); border:1.5px solid var(--border); border-radius:8px; padding:9px 11px; color:var(--text); font-family:var(--font); font-size:0.85rem; outline:none; transition:border-color 0.15s,box-shadow 0.15s; width:100%; }
+  .fi:focus,.fs:focus,.fta:focus { border-color:var(--accent); box-shadow:0 0 0 3px rgba(29,78,216,0.08); background:#fff; }
+  .fi.calc { background:linear-gradient(135deg,#eff6ff,#ecfeff); border-color:#bfdbfe; color:var(--accent); font-family:var(--font-mono); font-weight:600; cursor:not-allowed; }
+  .fi.calc-pos { background:#ecfdf5!important; border-color:#a7f3d0!important; color:var(--green-lt)!important; }
+  .fi.calc-neg { background:#fef2f2!important; border-color:#fecaca!important; color:var(--red-lt)!important; }
+  .calc-note { font-size:0.64rem; color:var(--text3); margin-top:2px; }
+  .fta { resize:vertical; min-height:62px; }
+  .modal-footer { padding:12px 22px 20px; display:flex; gap:9px; justify-content:flex-end; }
+  .btn-cancel { padding:9px 18px; background:transparent; border:1.5px solid var(--border); border-radius:7px; color:var(--text2); font-family:var(--font); font-weight:500; font-size:0.82rem; cursor:pointer; transition:all 0.12s; }
+  .btn-cancel:hover { border-color:var(--border2); color:var(--text); background:var(--surface2); }
+  .btn-save { padding:9px 24px; background:var(--accent); border:none; border-radius:7px; color:#fff; font-family:var(--font); font-weight:700; font-size:0.82rem; cursor:pointer; transition:all 0.15s; box-shadow:0 2px 8px rgba(29,78,216,0.25); }
+  .btn-save:hover { background:#1e40af; box-shadow:0 4px 14px rgba(29,78,216,0.35); }
+
+  /* Mobile */
+  @media(max-width:600px){
+    nav{padding:0 14px;} .nav-tabs{display:none;} .mobile-nav{display:flex!important;}
+    .dashboard,.items-page{padding:14px 16px;}
+    .kpi-grid{grid-template-columns:1fr 1fr;}
+    .kpi-value{font-size:1.5rem;}
+    .kpi-value.sm{font-size:1.05rem;}
+    .kpi-label{font-size:0.7rem;}
+    .fg{grid-template-columns:1fr;}
+    .modal{border-radius:12px;}
+    .regional-grid{grid-template-columns:1fr;}
+    body{padding-bottom:64px;}
+    .donut-top{flex-direction:column; align-items:center;}
+    .donut{width:110px;height:110px;}
+  }
+  @media(min-width:601px) and (max-width:900px){
+    .kpi-grid{grid-template-columns:repeat(3,1fr);}
+    .regional-grid{grid-template-columns:repeat(2,1fr);}
+  }
+  .mobile-nav { display:none; position:fixed; bottom:0; left:0; right:0; background:rgba(255,255,255,0.97); backdrop-filter:blur(12px); border-top:1px solid var(--border); z-index:90; padding:6px 8px; gap:4px; justify-content:center; box-shadow:0 -2px 10px rgba(15,23,42,0.07); }
+  .m-tab { flex:1; max-width:130px; display:flex; flex-direction:column; align-items:center; gap:2px; padding:7px 6px; border-radius:8px; border:none; background:transparent; color:var(--text3); font-family:var(--font); font-size:0.65rem; cursor:pointer; transition:all 0.15s; font-weight:500; }
+  .m-tab.active { background:#eff6ff; color:var(--accent); }
+  .m-tab svg { width:19px; height:19px; }
+  ::-webkit-scrollbar{width:4px;height:4px;} ::-webkit-scrollbar-track{background:transparent;} ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:99px;}
+  .toast { position:fixed; bottom:76px; left:50%; transform:translateX(-50%) translateY(16px); background:#065f46; color:#fff; padding:9px 20px; border-radius:8px; font-size:0.8rem; font-weight:600; z-index:9999; opacity:0; transition:all 0.25s; pointer-events:none; white-space:nowrap; box-shadow:0 4px 14px rgba(6,95,70,0.3); letter-spacing:0.02em; }
+  .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+  /* ── LOGIN PAGE ── */
+  #login-screen {
+    position: fixed; inset: 0; z-index: 9999;
+    background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #1d4ed8 100%);
+    display: flex; align-items: center; justify-content: center; padding: 20px;
+  }
+  #login-screen.hidden { display: none; }
+  .login-box {
+    background: #fff; border-radius: 18px; padding: 44px 40px 36px;
+    width: 100%; max-width: 400px;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.35), 0 0 0 1px rgba(255,255,255,0.08);
+    animation: slideUp 0.3s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  .login-logo-wrap { text-align: center; margin-bottom: 28px; }
+  .login-logo {
+    font-family: var(--font); font-weight: 700; font-size: 1.9rem;
+    color: var(--accent); letter-spacing: 0.06em; display: block;
+  }
+  .login-logo-sub {
+    font-size: 0.72rem; font-weight: 500; color: var(--text3);
+    letter-spacing: 0.14em; text-transform: uppercase; margin-top: 4px;
+    display: block;
+  }
+  .login-divider {
+    width: 40px; height: 3px; background: var(--accent);
+    margin: 12px auto 0; border-radius: 99px;
+  }
+  .login-title {
+    font-size: 1rem; font-weight: 700; color: var(--text);
+    text-align: center; margin-bottom: 24px; letter-spacing: -0.01em;
+  }
+  .login-field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 14px; }
+  .login-field label {
+    font-size: 0.7rem; font-weight: 700; color: var(--text2);
+    text-transform: uppercase; letter-spacing: 0.08em;
+  }
+  .login-input {
+    background: var(--surface2); border: 1.5px solid var(--border);
+    border-radius: 9px; padding: 11px 14px; color: var(--text);
+    font-family: var(--font); font-size: 0.95rem; outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s; width: 100%;
+  }
+  .login-input:focus {
+    border-color: var(--accent); background: #fff;
+    box-shadow: 0 0 0 3px rgba(29,78,216,0.1);
+  }
+  .login-err {
+    background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px;
+    padding: 10px 14px; font-size: 0.82rem; color: #991b1b;
+    font-weight: 500; margin-bottom: 14px; display: none;
+    text-align: center;
+  }
+  .login-err.show { display: block; }
+  .login-btn {
+    width: 100%; padding: 13px; background: var(--accent); border: none;
+    border-radius: 9px; color: #fff; font-family: var(--font);
+    font-weight: 700; font-size: 0.95rem; cursor: pointer;
+    transition: all 0.15s; box-shadow: 0 4px 14px rgba(29,78,216,0.3);
+    letter-spacing: 0.02em; margin-top: 4px;
+  }
+  .login-btn:hover { background: #1e40af; box-shadow: 0 6px 18px rgba(29,78,216,0.4); }
+  .login-footer {
+    text-align: center; margin-top: 20px;
+    font-size: 0.7rem; color: var(--text3);
+    letter-spacing: 0.04em;
+  }
+  /* User badge in nav */
+  .nav-user-badge {
+    display: flex; align-items: center; gap: 8px;
+    padding: 5px 12px; background: var(--surface3);
+    border: 1px solid var(--border); border-radius: 8px;
+    font-size: 0.78rem; font-weight: 600; color: var(--text2);
+  }
+  .nav-user-badge .role-tag {
+    font-size: 0.65rem; padding: 1px 7px; border-radius: 4px;
+    font-weight: 700; letter-spacing: 0.05em;
+  }
+  .role-tag.admin { background: #eff6ff; color: var(--accent); border: 1px solid #bfdbfe; }
+  .role-tag.user  { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
+  .btn-logout {
+    padding: 6px 13px; background: transparent; border: 1.5px solid var(--border);
+    border-radius: 7px; color: var(--text2); font-family: var(--font);
+    font-weight: 500; font-size: 0.78rem; cursor: pointer; transition: all 0.12s;
+  }
+  .btn-logout:hover { border-color: #fecaca; color: var(--red-lt); background: #fef2f2; }
+  .hidden { display: none !important; }
+  .diff-pos{color:var(--green-lt);} .diff-neg{color:var(--red-lt);} .diff-zero{color:var(--text3);}
+  /* ── DB STATUS ── */
+  .db-status { display:flex; align-items:center; gap:6px; padding:4px 10px; background:var(--surface3); border:1px solid var(--border); border-radius:7px; font-size:0.72rem; font-weight:600; color:var(--text2); }
+  .db-status-dot { width:7px; height:7px; border-radius:50%; background:#059669; flex-shrink:0; animation:pulse-dot 2s infinite; }
+  @keyframes pulse-dot { 0%,100%{opacity:1} 50%{opacity:0.4} }
+  /* ── LOADING SCREEN ── */
+  #loading-screen { position:fixed; inset:0; z-index:8000; background:rgba(242,245,249,0.92); backdrop-filter:blur(6px); display:flex; align-items:center; justify-content:center; flex-direction:column; gap:16px; }
+  #loading-screen.hidden { display:none; }
+  .loading-spinner { width:40px; height:40px; border:3px solid #bfdbfe; border-top-color:#1d4ed8; border-radius:50%; animation:spin 0.8s linear infinite; }
+  @keyframes spin { to{transform:rotate(360deg)} }
+  .loading-text { font-size:0.88rem; font-weight:600; color:var(--text2); letter-spacing:0.04em; }
+</style>
+</head>
+<body>
+
+<!-- ═══ LOADING SCREEN ═══ -->
+<div id="loading-screen" class="hidden">
+  <div class="loading-spinner"></div>
+  <div class="loading-text">กำลังเชื่อมต่อ Firebase Database…</div>
+</div>
+
+<!-- ═══ LOGIN SCREEN ═══ -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo-wrap">
+      <span class="login-logo">SOA STOCK</span>
+      <span class="login-logo-sub">Inventory Management System</span>
+      <div class="login-divider"></div>
+    </div>
+    <div class="login-title">เข้าสู่ระบบ</div>
+    <div class="login-field">
+      <label>Username</label>
+      <input class="login-input" id="login-user" type="text" placeholder="กรอก Username" autocomplete="username" onkeydown="if(event.key==='Enter')document.getElementById('login-pass').focus()">
+    </div>
+    <div class="login-field">
+      <label>Password</label>
+      <input class="login-input" id="login-pass" type="password" placeholder="กรอก Password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <div class="login-err" id="login-err">Username หรือ Password ไม่ถูกต้อง</div>
+    <button class="login-btn" onclick="doLogin()">เข้าสู่ระบบ</button>
+    <div class="login-footer">SOA INVENTORY SYSTEM &nbsp;·&nbsp; กรุณาติดต่อผู้ดูแลระบบหากลืมรหัสผ่าน</div>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-brand">
+    <div class="nav-logo">SOA STOCK</div>
+    <div class="nav-logo-sub">Inventory Management System</div>
+  </div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="showPage('dashboard')">Dashboard</button>
+    <button class="nav-tab" onclick="showPage('items')">รายการสินค้า</button>
+  </div>
+  <div class="nav-right">
+    <div class="nav-user-badge" id="nav-user-badge">
+      <span id="nav-username">—</span>
+      <span class="role-tag" id="nav-role-tag">—</span>
+    </div>
+    <button class="btn-add" id="btn-add-item" onclick="openModal()">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+      Add Item
+    </button>
+    <div class="db-status">
+      <div class="db-status-dot" id="db-status-dot"></div>
+      <span id="db-status-txt">Connecting…</span>
+    </div>
+    <button class="btn-logout" onclick="doLogout()">ออกจากระบบ</button>
+  </div>
+</nav>
+
+<!-- MOBILE NAV -->
+<div class="mobile-nav">
+  <button class="m-tab active" id="mtab-dashboard" onclick="showPage('dashboard')">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M4 5a1 1 0 011-1h4a1 1 0 011 1v5a1 1 0 01-1 1H5a1 1 0 01-1-1V5zm10 0a1 1 0 011-1h4a1 1 0 011 1v2a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zm10-3a1 1 0 011-1h4a1 1 0 011 1v7a1 1 0 01-1 1h-4a1 1 0 01-1-1v-7z"/></svg>
+    Dashboard
+  </button>
+  <button class="m-tab" id="mtab-items" onclick="showPage('items')">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+    สินค้า
+  </button>
+</div>
+
+<!-- ═══ DASHBOARD PAGE ═══ -->
+<div id="page-dashboard" class="page active">
+  <div class="dashboard">
+    <div class="page-header">
+      <div>
+        <h1>SOA INVENTORY SYSTEM</h1>
+        <p id="dash-updated">—</p>
+      </div>
+    </div>
+
+    <!-- KPI -->
+    <div class="kpi-grid">
+      <div class="kpi-card c-blue"><div class="kpi-stripe"></div><div class="kpi-icon">📦</div><div class="kpi-label">รายการทั้งหมด</div><div class="kpi-value" id="kpi-total">0</div><div class="kpi-sub">รายการสินค้า</div></div>
+      <div class="kpi-card c-teal"><div class="kpi-stripe"></div><div class="kpi-icon">🏬</div><div class="kpi-label">จำนวน Store</div><div class="kpi-value" id="kpi-stores">0</div><div class="kpi-sub">สาขา</div></div>
+      <div class="kpi-card c-green"><div class="kpi-stripe"></div><div class="kpi-icon">🔢</div><div class="kpi-label">Count รวม</div><div class="kpi-value" id="kpi-count">0</div><div class="kpi-sub">หน่วย</div></div>
+      <div class="kpi-card c-purple"><div class="kpi-stripe"></div><div class="kpi-icon">💰</div><div class="kpi-label">มูลค่าที่นับ</div><div class="kpi-value sm" id="kpi-val-count">฿0</div><div class="kpi-sub">Count × ราคา</div></div>
+      <div class="kpi-card c-amber"><div class="kpi-stripe"></div><div class="kpi-icon">🏷️</div><div class="kpi-label">มูลค่าในระบบ</div><div class="kpi-value sm" id="kpi-val-sys">฿0</div><div class="kpi-sub">Com × ราคา</div></div>
+      <div class="kpi-card c-red"><div class="kpi-stripe"></div><div class="kpi-icon">⚡</div><div class="kpi-label">มูลค่า Diff รวม</div><div class="kpi-value sm" id="kpi-diff-val">฿0</div><div class="kpi-sub">ส่วนต่างสุทธิ</div></div>
+    </div>
+
+    <!-- Regional row -->
+    <div class="chart-card" style="margin-bottom:14px">
+      <div class="card-title">🌏 Regional Summary</div>
+      <div class="regional-grid" id="regional-grid">
+        <div class="empty-state" style="padding:16px;grid-column:1/-1"><p>ยังไม่มีข้อมูล</p></div>
+      </div>
+    </div>
+
+    <!-- Store + Status -->
+    <div class="charts-row">
+      <!-- Store ranking by Diff -->
+      <div class="chart-card">
+        <div class="card-title">🏬 Store Ranking <span>เรียงตาม Diff ลบ → มากสุด</span></div>
+        <div class="store-table-wrap">
+          <table class="store-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Store</th>
+                <th>Regional</th>
+                <th class="r">มูลค่าที่นับ</th>
+                <th class="r">มูลค่า Diff</th>
+              </tr>
+            </thead>
+            <tbody id="store-tbody">
+              <tr><td colspan="5"><div class="empty-state" style="padding:16px"><p>ยังไม่มีข้อมูล</p></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Donut -->
+      <div class="chart-card">
+        <div class="card-title">📊 Status Distribution</div>
+        <div class="donut-wrap">
+          <div class="donut-top">
+            <svg class="donut" viewBox="0 0 36 36" id="donut-svg">
+              <circle cx="18" cy="18" r="15.9" fill="none" stroke="#f1f5f9" stroke-width="3.8"/>
+              <text x="18" y="15.5" text-anchor="middle" dominant-baseline="central" fill="#0f172a" font-family="'IBM Plex Mono',monospace" font-size="4.5" font-weight="600" id="donut-center">0</text>
+              <text x="18" y="21" text-anchor="middle" dominant-baseline="central" fill="#94a3b8" font-family="'IBM Plex Sans Thai','IBM Plex Sans',sans-serif" font-size="2.8" id="donut-sub">รายการ</text>
+            </svg>
+            <div class="donut-legend">
+              <div class="leg-item"><div class="leg-dot" style="background:#059669"></div>Match <span class="leg-val" id="leg-match">0</span><span class="leg-pct" id="pct-match"></span></div>
+              <div class="leg-item"><div class="leg-dot" style="background:#d97706"></div>Over <span class="leg-val" id="leg-over">0</span><span class="leg-pct" id="pct-over"></span></div>
+              <div class="leg-item"><div class="leg-dot" style="background:#dc2626"></div>Short <span class="leg-val" id="leg-short">0</span><span class="leg-pct" id="pct-short"></span></div>
+              <div class="leg-item"><div class="leg-dot" style="background:#7c3aed"></div>Pending <span class="leg-val" id="leg-pending">0</span><span class="leg-pct" id="pct-pending"></span></div>
+            </div>
+          </div>
+          <!-- Stacked proportion bar -->
+          <div class="status-bar-wrap">
+            <div class="status-bar-label">สัดส่วนสถานะ (%)</div>
+            <div class="status-bar" id="status-bar">
+              <div class="status-bar-seg match-seg" id="bar-match" style="flex:0"></div>
+              <div class="status-bar-seg over-seg" id="bar-over" style="flex:0"></div>
+              <div class="status-bar-seg short-seg" id="bar-short" style="flex:0"></div>
+              <div class="status-bar-seg pending-seg" id="bar-pending" style="flex:0"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ ITEMS PAGE ═══ -->
+<div id="page-items" class="page">
+  <div class="items-page">
+    <div class="items-header">
+      <h1>รายการสินค้า <span class="count-badge" id="items-count-tag">0</span></h1>
+      <div class="items-controls">
+        <div class="search-box">
+          <svg width="13" height="13" fill="none" stroke="#94a3b8" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m16.5 16.5 4 4" stroke-linecap="round"/></svg>
+          <input type="text" id="search-input" placeholder="ค้นหา Item / Desc / Store..." oninput="renderTable()">
+        </div>
+        <select class="filter-sel" id="filter-regional" onchange="renderTable()"><option value="">ทุก Regional</option></select>
+        <select class="filter-sel" id="filter-store" onchange="renderTable()"><option value="">ทุก Store</option></select>
+        <select class="filter-sel" id="filter-zone" onchange="renderTable()"><option value="">ทุก Zone</option></select>
+        <select class="filter-sel" id="filter-status" onchange="renderTable()">
+          <option value="">ทุก Status</option>
+          <option value="Match">Match</option>
+          <option value="Over">Over</option>
+          <option value="Short">Short</option>
+          <option value="Pending">Pending</option>
+        </select>
+        <button class="btn-export" onclick="exportExcel()">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+          Export Excel
+        </button>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Regional</th><th>Store</th><th>Zone</th><th>Dept</th><th>Class</th>
+            <th>Item</th><th>Desc</th>
+            <th class="r">Com</th>
+            <th class="r">ราคาสินค้า</th>
+            <th class="r">Count</th>
+            <th class="r">Diff</th>
+            <th class="r">มูลค่า Diff</th>
+            <th>Remark</th><th>Status</th><th></th>
+          </tr>
+        </thead>
+        <tbody id="table-body">
+          <tr><td colspan="16"><div class="empty-state"><div class="icon">📦</div><p>ยังไม่มีรายการสินค้า — กด Add Item เพื่อเพิ่ม</p></div></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODAL ═══ -->
+<div class="modal-overlay" id="modal-overlay" onclick="handleOverlayClick(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="modal-title">Add Item</h2>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="sec-title">📍 Location</div>
+      <div class="fg" style="margin-bottom:14px">
+        <div class="field"><label>Regional *</label><input class="fi" id="f-regional" placeholder="เช่น North, South, BKK"></div>
+        <div class="field"><label>Store *</label><input class="fi" id="f-store" placeholder="เช่น Lotus Rama9, BigC Ratchada"></div>
+        <div class="field"><label>Zone *</label><input class="fi" id="f-zone" placeholder="เช่น A, B, C"></div>
+        <div class="field"><label>Dept</label><input class="fi" id="f-dept" placeholder="เช่น Grocery, Fresh, Frozen"></div>
+      </div>
+      <div class="sec-title">📦 Item Information</div>
+      <div class="fg">
+        <div class="field"><label>Class</label><input class="fi" id="f-class" placeholder="001"></div>
+        <div class="field"><label>Item *</label><input class="fi" id="f-item" placeholder="รหัสสินค้า"></div>
+        <div class="field full"><label>Description</label><input class="fi" id="f-desc" placeholder="ชื่อสินค้า / รายละเอียด"></div>
+        <div class="field"><label>ราคาสินค้า (฿/หน่วย)</label><input class="fi" id="f-price" type="number" min="0" step="0.01" placeholder="0.00" oninput="calcDiff()"></div>
+        <div class="field"><label>Com (จำนวนในระบบ)</label><input class="fi" id="f-com" type="number" min="0" step="1" placeholder="0" oninput="calcDiff()"></div>
+        <div class="field"><label>Count (จำนวนที่นับ)</label><input class="fi" id="f-count" type="number" min="0" placeholder="0" oninput="calcDiff()"></div>
+        <div class="field">
+          <label>Diff <span style="font-weight:400;text-transform:none;font-size:0.62rem;color:var(--text3)">(อัตโนมัติ)</span></label>
+          <input class="fi calc" id="f-diff" readonly tabindex="-1">
+          <div class="calc-note">⚡ Count − Com</div>
+        </div>
+        <div class="field">
+          <label>มูลค่า Diff <span style="font-weight:400;text-transform:none;font-size:0.62rem;color:var(--text3)">(อัตโนมัติ)</span></label>
+          <input class="fi calc" id="f-diff-val" readonly tabindex="-1">
+          <div class="calc-note">⚡ Diff × ราคาสินค้า</div>
+        </div>
+        <div class="field"><label>Status</label>
+          <select class="fs" id="f-status">
+            <option value="Pending">Pending</option>
+            <option value="Match">Match</option>
+            <option value="Over">Over</option>
+            <option value="Short">Short</option>
+          </select>
+        </div>
+        <div class="field full"><label>Remark</label><textarea class="fta" id="f-remark" placeholder="หมายเหตุเพิ่มเติม..."></textarea></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal()">ยกเลิก</button>
+      <button class="btn-save" onclick="saveItem()">💾 บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+/* ════════════════════════════════════════════════════════════
+   ★  SOA STOCK — Firebase Realtime Database Edition  ★
+   ════════════════════════════════════════════════════════════
+   ต้องแก้ไข 3 ค่าด้านล่างนี้เท่านั้น:
+   1. apiKey
+   2. projectId
+   3. appId
+   (databaseURL, authDomain, storageBucket, messagingSenderId
+    คำนวณจาก projectId ได้อัตโนมัติ — แต่ถ้ามีค่าจริงให้ใส่)
+   ════════════════════════════════════════════════════════════ */
+
+import { initializeApp }        from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, onValue, push, set, remove, update }
+                                 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+/* ── ★ แก้ไขตรงนี้ 3 ค่า ★ ── */
+const firebaseConfig = {
+  apiKey:            "AIzaSyBQHQkisc5At5js_gE2G7begIzKvrEbcDA",
+  authDomain:        "soa-stock-db.firebaseapp.com",
+  databaseURL:       "https://soa-stock-db-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId:         "soa-stock-db",
+  storageBucket:     "soa-stock-db.appspot.com",
+  messagingSenderId: "109601016392",
+  appId:             "1:109601016392:web:1081c50773e3a221aba67d"
+};
+/* ──────────────────────────────── */
+
+const fbApp = initializeApp(firebaseConfig);
+const db    = getDatabase(fbApp);
+const DB_PATH = 'soa_items';
+
+/* ══════════════════════════════════════════
+   DATA LAYER
+══════════════════════════════════════════ */
+let items       = [];        // local mirror of Firebase data
+let fbKeys      = [];        // Firebase push-keys matching items[] index
+let editIndex   = -1;
+let isConnected = false;
+
+/* ── Show loading overlay until Firebase connects ── */
+function setDbStatus(connected) {
+  isConnected = connected;
+  const dot = document.getElementById('db-status-dot');
+  const txt = document.getElementById('db-status-txt');
+  if (!dot || !txt) return;
+  if (connected) {
+    dot.style.background = '#059669';
+    txt.textContent = 'Online · Realtime';
+  } else {
+    dot.style.background = '#dc2626';
+    txt.textContent = 'Connecting…';
+  }
+}
+
+/* ── Listen for realtime changes ── */
+onValue(ref(db, DB_PATH), (snapshot) => {
+  const data = snapshot.val();
+  if (data) {
+    fbKeys = Object.keys(data);
+    items  = fbKeys.map(k => ({ ...data[k] }));
+  } else {
+    fbKeys = [];
+    items  = [];
+  }
+  setDbStatus(true);
+  // Re-render if user is logged in
+  if (currentRole) {
+    syncFilters();
+    renderDashboard();
+    renderTable();
+    // Hide loading screen if still showing
+    const ls = document.getElementById('loading-screen');
+    if (ls) ls.classList.add('hidden');
+  }
+}, (error) => {
+  console.error('Firebase error:', error);
+  setDbStatus(false);
+});
+
+/* ── Write (add / edit) ── */
+function saveData(obj, idx) {
+  if (idx >= 0 && fbKeys[idx]) {
+    // Edit existing record
+    set(ref(db, `${DB_PATH}/${fbKeys[idx]}`), obj)
+      .then(() => toast('✔ แก้ไขรายการเรียบร้อย'))
+      .catch(e => toast('❌ บันทึกไม่สำเร็จ: ' + e.message));
+  } else {
+    // Add new record
+    push(ref(db, DB_PATH), obj)
+      .then(() => toast('✔ เพิ่มสินค้าเรียบร้อย'))
+      .catch(e => toast('❌ บันทึกไม่สำเร็จ: ' + e.message));
+  }
+}
+
+/* ── Delete ── */
+function deleteFromDb(idx) {
+  if (!fbKeys[idx]) return;
+  remove(ref(db, `${DB_PATH}/${fbKeys[idx]}`))
+    .then(() => toast('✔ ลบรายการเรียบร้อย'))
+    .catch(e => toast('❌ ลบไม่สำเร็จ: ' + e.message));
+}
+
+/* ══════════════════════════════════════════
+   AUTH SYSTEM
+══════════════════════════════════════════ */
+const ACCOUNTS = {
+  'soa':   { pass: 'makroho',  role: 'user',  label: 'User' },
+  'admin': { pass: 'adminho',  role: 'admin', label: 'Admin' }
+};
+
+let currentRole = null;
+let currentUser = null;
+
+function doLogin() {
+  const u = (document.getElementById('login-user').value || '').trim().toLowerCase();
+  const p = document.getElementById('login-pass').value || '';
+  const acc = ACCOUNTS[u];
+  if (acc && acc.pass === p) {
+    currentUser = u;
+    currentRole = acc.role;
+    sessionStorage.setItem('soa_sess', JSON.stringify({ user: currentUser, role: currentRole }));
+    document.getElementById('login-screen').classList.add('hidden');
+    applyRoleUI();
+    // Show loading screen while waiting for Firebase
+    const ls = document.getElementById('loading-screen');
+    if (ls) ls.classList.remove('hidden');
+    // If already connected, render immediately
+    if (isConnected) {
+      syncFilters(); renderDashboard(); renderTable();
+      if (ls) ls.classList.add('hidden');
+    }
+  } else {
+    const err = document.getElementById('login-err');
+    err.classList.add('show');
+    document.getElementById('login-pass').value = '';
+    document.getElementById('login-pass').focus();
+    setTimeout(() => err.classList.remove('show'), 3000);
+  }
+}
+
+function doLogout() {
+  sessionStorage.removeItem('soa_sess');
+  currentUser = null; currentRole = null;
+  document.getElementById('login-user').value = '';
+  document.getElementById('login-pass').value = '';
+  document.getElementById('login-screen').classList.remove('hidden');
+}
+
+function applyRoleUI() {
+  if (!currentUser) return;
+  const acc = ACCOUNTS[currentUser];
+  document.getElementById('nav-username').textContent = currentUser;
+  const rt = document.getElementById('nav-role-tag');
+  rt.textContent = acc.label;
+  rt.className = 'role-tag ' + acc.role;
+  const addBtn = document.getElementById('btn-add-item');
+  currentRole === 'admin' ? addBtn.classList.remove('hidden') : addBtn.classList.add('hidden');
+}
+
+// Restore session
+(function checkSession() {
+  try {
+    const sess = sessionStorage.getItem('soa_sess');
+    if (sess) {
+      const { user, role } = JSON.parse(sess);
+      if (ACCOUNTS[user]) {
+        currentUser = user; currentRole = role;
+        document.getElementById('login-screen').classList.add('hidden');
+        applyRoleUI();
+      }
+    }
+  } catch(e) { sessionStorage.removeItem('soa_sess'); }
+})();
+
+/* ══════════════════════════════════════════
+   UI HELPERS
+══════════════════════════════════════════ */
+window.doLogin   = doLogin;
+window.doLogout  = doLogout;
+
+function showPage(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  document.querySelectorAll('.nav-tab').forEach((t,i) => t.classList.toggle('active',(i===0&&page==='dashboard')||(i===1&&page==='items')));
+  ['dashboard','items'].forEach(p => { const e = document.getElementById('mtab-'+p); if(e) e.classList.toggle('active',p===page); });
+  if (page==='dashboard') renderDashboard();
+  if (page==='items') renderTable();
+}
+window.showPage = showPage;
+
+function calcDiff() {
+  const com   = parseFloat(document.getElementById('f-com').value)   || 0;
+  const count = parseFloat(document.getElementById('f-count').value) || 0;
+  const price = parseFloat(document.getElementById('f-price').value) || 0;
+  const diff  = count - com;
+  const dv    = diff * price;
+  document.getElementById('f-diff').value     = diff;
+  document.getElementById('f-diff-val').value = dv.toFixed(2);
+  const dc = diff>0?' calc-pos':diff<0?' calc-neg':'';
+  const vc = dv>0?'  calc-pos':dv<0?' calc-neg':'';
+  document.getElementById('f-diff').className     = 'fi calc' + dc;
+  document.getElementById('f-diff-val').className = 'fi calc' + vc;
+  document.getElementById('f-status').value = diff===0?'Match':diff>0?'Over':'Short';
+}
+window.calcDiff = calcDiff;
+
+function openModal(idx=-1) {
+  editIndex = idx;
+  document.getElementById('modal-title').textContent = idx===-1 ? 'Add Item' : 'Edit Item';
+  const IDS = ['f-regional','f-store','f-zone','f-dept','f-class','f-item','f-desc','f-price','f-com','f-count','f-remark'];
+  if (idx >= 0) {
+    const it = items[idx];
+    const map = {
+      'f-regional':it.regional,'f-store':it.store,'f-zone':it.zone,'f-dept':it.dept,
+      'f-class':it.cls,'f-item':it.item,'f-desc':it.desc,'f-price':it.price,
+      'f-com':it.com,'f-count':it.count,'f-remark':it.remark
+    };
+    Object.entries(map).forEach(([id,v])=>document.getElementById(id).value=v||'');
+    document.getElementById('f-status').value = it.status||'Pending';
+    calcDiff();
+  } else {
+    IDS.forEach(id=>document.getElementById(id).value='');
+    ['f-diff','f-diff-val'].forEach(id=>{ document.getElementById(id).value=''; document.getElementById(id).className='fi calc'; });
+    document.getElementById('f-status').value='Pending';
+  }
+  document.getElementById('modal-overlay').classList.add('open');
+  setTimeout(()=>document.getElementById('f-regional').focus(),100);
+}
+window.openModal = openModal;
+
+function closeModal() { document.getElementById('modal-overlay').classList.remove('open'); }
+window.closeModal = closeModal;
+
+function handleOverlayClick(e) { if(e.target===document.getElementById('modal-overlay')) closeModal(); }
+window.handleOverlayClick = handleOverlayClick;
+
+function saveItem() {
+  const vals = ['f-regional','f-store','f-zone','f-item'].map(id=>({ id, v:document.getElementById(id).value.trim() }));
+  let ok = true;
+  vals.forEach(({id,v})=>{ document.getElementById(id).style.borderColor = v ? '' : '#dc2626'; if(!v) ok=false; });
+  if (!ok) return;
+  vals.forEach(({id})=>document.getElementById(id).style.borderColor='');
+  const com   = parseFloat(document.getElementById('f-com').value)   || 0;
+  const count = parseFloat(document.getElementById('f-count').value) || 0;
+  const price = parseFloat(document.getElementById('f-price').value) || 0;
+  const diff  = count - com;
+  const diffVal = diff * price;
+  const obj = {
+    regional : document.getElementById('f-regional').value.trim(),
+    store    : document.getElementById('f-store').value.trim(),
+    zone     : document.getElementById('f-zone').value.trim(),
+    dept     : document.getElementById('f-dept').value.trim(),
+    cls      : document.getElementById('f-class').value.trim(),
+    item     : document.getElementById('f-item').value.trim(),
+    desc     : document.getElementById('f-desc').value.trim(),
+    price, com, count, diff, diffVal,
+    remark   : document.getElementById('f-remark').value.trim(),
+    status   : document.getElementById('f-status').value,
+    createdAt: editIndex>=0 ? items[editIndex].createdAt : new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    updatedBy: currentUser || 'unknown'
+  };
+  saveData(obj, editIndex);
+  closeModal();
+}
+window.saveItem = saveItem;
+
+function deleteItem(idx) {
+  if (confirm('ยืนยันการลบรายการนี้?')) deleteFromDb(idx);
+}
+window.deleteItem = deleteItem;
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+const fmt  = n => new Intl.NumberFormat('th-TH',{minimumFractionDigits:0,maximumFractionDigits:0}).format(n);
+const fmtB = n => '฿'+new Intl.NumberFormat('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2}).format(n);
+
+/* ══════════════════════════════════════════
+   RENDER TABLE
+══════════════════════════════════════════ */
+function renderTable() {
+  const q     = document.getElementById('search-input').value.toLowerCase();
+  const fr    = document.getElementById('filter-regional').value;
+  const fst   = document.getElementById('filter-store').value;
+  const fz    = document.getElementById('filter-zone').value;
+  const fstat = document.getElementById('filter-status').value;
+  const filtered = items.map((it,i)=>({...it,_i:i})).filter(it=>(
+    (!q  || (it.item+it.desc+it.store).toLowerCase().includes(q)) &&
+    (!fr  || it.regional===fr) && (!fst || it.store===fst) &&
+    (!fz  || it.zone===fz)     && (!fstat || it.status===fstat)
+  ));
+  document.getElementById('items-count-tag').textContent = filtered.length;
+  const tb = document.getElementById('table-body');
+  if (!filtered.length) {
+    tb.innerHTML = `<tr><td colspan="16"><div class="empty-state"><div class="icon">📦</div><p>${!items.length?'ยังไม่มีรายการสินค้า — กด Add Item เพื่อเพิ่ม':'ไม่พบรายการที่ตรงกับเงื่อนไขที่ค้นหา'}</p></div></td></tr>`;
+    return;
+  }
+  const sm = {Match:'match',Over:'over',Short:'short',Pending:'pending'};
+  tb.innerHTML = filtered.map((it, i) => {
+    const ri  = it._i;
+    const dc  = it.diff>0?'c-pos':it.diff<0?'c-neg':'c-zero';
+    const dvp = it.diffVal>=0?'+':'';
+    const dvc = it.diffVal>0?'c-pos':it.diffVal<0?'c-neg':'c-zero';
+    return `<tr>
+      <td style="color:var(--text3);font-size:0.72rem;font-family:var(--font-mono)">${i+1}</td>
+      <td class="td-reg">${it.regional||''}</td>
+      <td class="td-store">${it.store||''}</td>
+      <td class="td-zone">${it.zone||''}</td>
+      <td style="color:var(--text2)">${it.dept||''}</td>
+      <td style="color:var(--text3);font-family:var(--font-mono);font-size:0.73rem">${it.cls||''}</td>
+      <td class="td-item">${it.item||''}</td>
+      <td style="max-width:150px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text2)">${it.desc||''}</td>
+      <td class="td-num" style="color:var(--text2)">${fmt(it.com||0)}</td>
+      <td class="td-num bold">${fmtB(it.price||0)}</td>
+      <td class="td-num bold">${fmt(it.count||0)}</td>
+      <td class="td-num bold ${dc}">${it.diff>0?'+':''}${fmt(it.diff||0)}</td>
+      <td class="td-num bold ${dvc}">${dvp}${fmtB(it.diffVal||0)}</td>
+      <td style="color:var(--text3);font-size:0.72rem;max-width:100px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${it.remark||''}</td>
+      <td><span class="badge ${sm[it.status]||'pending'}">${it.status||'Pending'}</span></td>
+      <td style="white-space:nowrap">
+        <button class="action-btn" onclick="openModal(${ri})">Edit</button>
+        ${currentRole==='admin'?`<button class="action-btn" onclick="deleteItem(${ri})" style="margin-left:3px;color:var(--red-lt)">Del</button>`:''}
+      </td>
+    </tr>`;
+  }).join('');
+}
+window.renderTable = renderTable;
+
+/* ══════════════════════════════════════════
+   SYNC FILTERS
+══════════════════════════════════════════ */
+function syncFilters() {
+  const setOpts=(id,vals,lbl)=>{
+    const s=document.getElementById(id), c=s.value;
+    s.innerHTML=`<option value="">${lbl}</option>`+vals.map(v=>`<option value="${v}">${v}</option>`).join('');
+    if(vals.includes(c)) s.value=c;
+  };
+  setOpts('filter-regional',[...new Set(items.map(it=>it.regional))].filter(Boolean).sort(),'ทุก Regional');
+  setOpts('filter-store',   [...new Set(items.map(it=>it.store))].filter(Boolean).sort(),   'ทุก Store');
+  setOpts('filter-zone',    [...new Set(items.map(it=>it.zone))].filter(Boolean).sort(),    'ทุก Zone');
+}
+
+/* ══════════════════════════════════════════
+   EXPORT EXCEL
+══════════════════════════════════════════ */
+function exportExcel() {
+  if (!items.length) { alert('ไม่มีข้อมูลสำหรับ Export'); return; }
+  const q     = document.getElementById('search-input').value.toLowerCase();
+  const fr    = document.getElementById('filter-regional').value;
+  const fst   = document.getElementById('filter-store').value;
+  const fz    = document.getElementById('filter-zone').value;
+  const fstat = document.getElementById('filter-status').value;
+  const data  = items.filter(it=>(
+    (!q  ||(it.item+it.desc+it.store).toLowerCase().includes(q)) &&
+    (!fr  ||it.regional===fr) && (!fst||it.store===fst) &&
+    (!fz  ||it.zone===fz)     && (!fstat||it.status===fstat)
+  ));
+  if (!data.length) { alert('ไม่มีข้อมูลในตัวกรองที่เลือก'); return; }
+  const headers = ['#','Regional','Store','Zone','Dept','Class','Item','Description','Com','ราคาสินค้า (฿)','Count','Diff','มูลค่า Diff (฿)','Remark','Status','วันที่บันทึก','แก้ไขล่าสุด','แก้ไขโดย'];
+  const rows = data.map((it,i)=>[
+    i+1, it.regional, it.store, it.zone, it.dept, it.cls, it.item, it.desc,
+    it.com, it.price, it.count, it.diff, parseFloat((it.diffVal||0).toFixed(2)),
+    it.remark, it.status,
+    it.createdAt ? new Date(it.createdAt).toLocaleDateString('th-TH') : '',
+    it.updatedAt ? new Date(it.updatedAt).toLocaleDateString('th-TH') : '',
+    it.updatedBy || ''
+  ]);
+  const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+  ws['!cols'] = [4,14,20,8,14,8,14,28,8,14,8,8,16,20,10,14,14,12].map(w=>({wch:w}));
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'SOA STOCK Data');
+  const sm={};
+  data.forEach(it=>{ const k=it.store||'N/A'; if(!sm[k]) sm[k]={store:k,regional:it.regional,items:0,count:0,valCount:0,valSys:0,diffVal:0}; sm[k].items++; sm[k].count+=it.count; sm[k].valCount+=it.count*it.price; sm[k].valSys+=it.com*it.price; sm[k].diffVal+=it.diffVal; });
+  const sumRows = Object.values(sm).sort((a,b)=>a.diffVal-b.diffVal);
+  const ws2 = XLSX.utils.aoa_to_sheet([['Regional','Store','รายการ','Count รวม','มูลค่าที่นับ (฿)','มูลค่าในระบบ (฿)','มูลค่า Diff (฿)'],...sumRows.map(r=>[r.regional,r.store,r.items,r.count,parseFloat(r.valCount.toFixed(2)),parseFloat(r.valSys.toFixed(2)),parseFloat(r.diffVal.toFixed(2))])]);
+  ws2['!cols'] = [14,20,8,10,18,18,18].map(w=>({wch:w}));
+  XLSX.utils.book_append_sheet(wb, ws2, 'Store Summary');
+  XLSX.writeFile(wb, `SOA_STOCK_${new Date().toISOString().slice(0,10)}.xlsx`);
+  toast('✔ Export Excel เรียบร้อย');
+}
+window.exportExcel = exportExcel;
+
+/* ══════════════════════════════════════════
+   RENDER DASHBOARD
+══════════════════════════════════════════ */
+function renderDashboard() {
+  const total      = items.length;
+  const stores     = new Set(items.map(it=>it.store)).size;
+  const totalCount = items.reduce((s,it)=>s+(it.count||0),0);
+  const valCount   = items.reduce((s,it)=>s+(it.count||0)*(it.price||0),0);
+  const valSys     = items.reduce((s,it)=>s+(it.com||0)*(it.price||0),0);
+  const totalDV    = items.reduce((s,it)=>s+(it.diffVal||0),0);
+  document.getElementById('kpi-total').textContent     = fmt(total);
+  document.getElementById('kpi-stores').textContent    = stores;
+  document.getElementById('kpi-count').textContent     = fmt(totalCount);
+  document.getElementById('kpi-val-count').textContent = fmtB(valCount);
+  document.getElementById('kpi-val-sys').textContent   = fmtB(valSys);
+  const dve = document.getElementById('kpi-diff-val');
+  dve.textContent  = (totalDV>=0?'+':'')+fmtB(totalDV);
+  dve.className    = 'kpi-value sm '+(totalDV>0?'diff-pos':totalDV<0?'diff-neg':'');
+  document.getElementById('dash-updated').textContent  = `Last updated: ${new Date().toLocaleDateString('th-TH',{year:'numeric',month:'long',day:'numeric',hour:'2-digit',minute:'2-digit'})}`;
+
+  /* Regional */
+  const rm={};
+  items.forEach(it=>{ const k=it.regional||'(ไม่ระบุ)'; if(!rm[k]) rm[k]={items:0,count:0,valCount:0,valSys:0,diffVal:0,stores:new Set()}; rm[k].items++; rm[k].count+=(it.count||0); rm[k].valCount+=(it.count||0)*(it.price||0); rm[k].valSys+=(it.com||0)*(it.price||0); rm[k].diffVal+=(it.diffVal||0); if(it.store) rm[k].stores.add(it.store); });
+  const regs   = Object.entries(rm).sort((a,b)=>a[0].localeCompare(b[0],'th'));
+  const maxRV  = Math.max(...regs.map(r=>r[1].valCount),1);
+  const rg     = document.getElementById('regional-grid');
+  if (!regs.length) { rg.innerHTML='<div class="empty-state" style="padding:16px;grid-column:1/-1"><p>ยังไม่มีข้อมูล</p></div>'; }
+  else {
+    rg.innerHTML = regs.map(([name,d],i)=>{
+      const rank    = i+1;
+      const rankCls = rank<=4?`r${rank}`:'';
+      const dvColor = d.diffVal>0?'#059669':d.diffVal<0?'#dc2626':'#94a3b8';
+      const dvSign  = d.diffVal>=0?'+':'';
+      const pct     = (d.valCount/maxRV*100).toFixed(0);
+      return `<div class="regional-card">
+        <div class="reg-top"><div class="reg-name"><span class="reg-rank ${rankCls}">${rank}</span>🌏 ${name}</div><div class="reg-pill">${d.items} รายการ</div></div>
+        <div class="reg-grid">
+          <div class="reg-stat"><div class="reg-stat-lbl">มูลค่าที่นับ</div><div class="reg-stat-val">${fmtB(d.valCount)}</div></div>
+          <div class="reg-stat"><div class="reg-stat-lbl">มูลค่าในระบบ</div><div class="reg-stat-val">${fmtB(d.valSys)}</div></div>
+          <div class="reg-stat"><div class="reg-stat-lbl">Count รวม</div><div class="reg-stat-val">${fmt(d.count)} หน่วย</div></div>
+          <div class="reg-stat"><div class="reg-stat-lbl">มูลค่า Diff</div><div class="reg-stat-val" style="color:${dvColor}">${dvSign}${fmtB(d.diffVal)}</div></div>
+        </div>
+        <div class="reg-prog-row"><span>${d.stores.size} Store</span><div class="reg-prog-track"><div class="reg-prog-fill" style="width:${pct}%"></div></div><span>${pct}%</span></div>
+      </div>`;
+    }).join('');
+  }
+
+  /* Store Ranking */
+  const stm={};
+  items.forEach(it=>{ const k=it.store||'(ไม่ระบุ)'; if(!stm[k]) stm[k]={store:k,regional:it.regional||'—',valCount:0,diffVal:0}; stm[k].valCount+=(it.count||0)*(it.price||0); stm[k].diffVal+=(it.diffVal||0); });
+  const stList   = Object.values(stm).sort((a,b)=>a.diffVal-b.diffVal);
+  const maxAbsDV = Math.max(...stList.map(s=>Math.abs(s.diffVal)),1);
+  const stb = document.getElementById('store-tbody');
+  if (!stList.length) { stb.innerHTML='<tr><td colspan="5"><div class="empty-state" style="padding:16px"><p>ยังไม่มีข้อมูล</p></div></td></tr>'; }
+  else {
+    stb.innerHTML = stList.map((s,i)=>{
+      const dvSign  = s.diffVal>=0?'+':'';
+      const dvColor = s.diffVal>0?'#059669':s.diffVal<0?'#dc2626':'#94a3b8';
+      const barPct  = (Math.abs(s.diffVal)/maxAbsDV*100).toFixed(0);
+      const barClass= s.diffVal<0?'fill-neg':'fill-pos';
+      const rankCls = i===0?'top1':i===1?'top2':i===2?'top3':'';
+      return `<tr>
+        <td><span class="rank-badge ${rankCls}">${i+1}</span></td>
+        <td><div class="store-name-cell">${s.store}</div><div class="store-reg-tag">${s.regional}</div></td>
+        <td style="font-size:0.73rem;color:var(--text3)">${s.regional}</td>
+        <td class="r">${fmtB(s.valCount)}</td>
+        <td class="r">
+          <div style="color:${dvColor};font-family:var(--font-mono);font-weight:600;font-size:0.77rem">${dvSign}${fmtB(s.diffVal)}</div>
+          <div class="store-diff-bar"><div class="store-diff-fill ${barClass}" style="width:${barPct}%"></div></div>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  /* Donut */
+  const sc={Match:0,Over:0,Short:0,Pending:0};
+  items.forEach(it=>sc[it.status]=(sc[it.status]||0)+1);
+  const pctOf = n => total>0?(n/total*100).toFixed(1)+'%':'0%';
+  document.getElementById('leg-match').textContent   = sc.Match;
+  document.getElementById('leg-over').textContent    = sc.Over;
+  document.getElementById('leg-short').textContent   = sc.Short;
+  document.getElementById('leg-pending').textContent = sc.Pending;
+  document.getElementById('pct-match').textContent   = '('+pctOf(sc.Match)+')';
+  document.getElementById('pct-over').textContent    = '('+pctOf(sc.Over)+')';
+  document.getElementById('pct-short').textContent   = '('+pctOf(sc.Short)+')';
+  document.getElementById('pct-pending').textContent = '('+pctOf(sc.Pending)+')';
+  document.getElementById('donut-center').textContent= total;
+  const barKeys=[['match','Match'],['over','Over'],['short','Short'],['pending','Pending']];
+  barKeys.forEach(([id,key])=>{
+    const el=document.getElementById('bar-'+id);
+    const p=total>0?sc[key]/total*100:0;
+    el.style.flex=p; el.textContent=p>=8?p.toFixed(0)+'%':'';
+  });
+  const svg=document.getElementById('donut-svg');
+  svg.querySelectorAll('.seg').forEach(e=>e.remove());
+  const colors=['#059669','#d97706','#dc2626','#7c3aed'];
+  const keys  =['Match','Over','Short','Pending'];
+  const r=15.9,cx=18,cy=18,circ=2*Math.PI*r;
+  if(total>0){ let off=circ/4; keys.forEach((k,i)=>{ const d=sc[k]/total*circ,seg=document.createElementNS('http://www.w3.org/2000/svg','circle'); seg.setAttribute('cx',cx);seg.setAttribute('cy',cy);seg.setAttribute('r',r);seg.setAttribute('fill','none');seg.setAttribute('stroke',colors[i]);seg.setAttribute('stroke-width','3.8');seg.setAttribute('stroke-dasharray',`${d} ${circ-d}`);seg.setAttribute('stroke-dashoffset',off);seg.setAttribute('transform',`rotate(-90 ${cx} ${cy})`);seg.classList.add('seg');svg.insertBefore(seg,svg.querySelector('text'));off-=d; }); }
+}
+window.renderDashboard = renderDashboard;
+
+</script>
+</body>
+</html>
