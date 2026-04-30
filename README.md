@@ -1,0 +1,1 @@
+# SOA_STOCK_ONLINE
