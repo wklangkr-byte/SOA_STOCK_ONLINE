@@ -194,6 +194,67 @@
   .status-bar-seg.short-seg { background:#dc2626; }
   .status-bar-seg.pending-seg { background:#7c3aed; }
 
+  /* ── DASHBOARD FILTER BAR ── */
+  .dash-filter-bar {
+    display:flex; align-items:center; flex-wrap:wrap; gap:12px;
+    background:#fff; border:1.5px solid var(--border); border-radius:var(--radius);
+    padding:14px 18px; margin-bottom:16px;
+    box-shadow:var(--shadow);
+  }
+  .dash-filter-group { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .dash-filter-label {
+    font-size:0.75rem; font-weight:700; color:var(--text2);
+    white-space:nowrap; letter-spacing:0.02em;
+  }
+  .dash-date-range { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+  .dash-date-wrap {
+    display:flex; align-items:center; gap:5px;
+    background:var(--surface2); border:1.5px solid var(--border);
+    border-radius:var(--radius-sm); padding:5px 10px;
+    transition:border-color 0.15s;
+  }
+  .dash-date-wrap:focus-within { border-color:var(--accent); box-shadow:0 0 0 3px rgba(29,78,216,0.07); }
+  .dash-date-icon { font-size:0.7rem; font-weight:600; color:var(--text3); white-space:nowrap; }
+  .dash-date-input {
+    border:none; outline:none; background:transparent;
+    font-family:var(--font-mono); font-size:0.8rem; color:var(--text);
+    cursor:pointer; width:130px;
+  }
+  .dash-date-input::-webkit-calendar-picker-indicator { cursor:pointer; opacity:0.6; }
+  .dash-date-sep { font-size:0.75rem; color:var(--text3); font-weight:500; }
+  .dash-filter-sel {
+    background:#fff; border:1.5px solid var(--border); border-radius:var(--radius-sm);
+    padding:7px 12px; color:var(--text); font-family:var(--font);
+    font-size:0.8rem; outline:none; cursor:pointer;
+    box-shadow:var(--shadow); transition:border-color 0.15s; min-width:150px;
+  }
+  .dash-filter-sel:focus { border-color:var(--accent); }
+  .dash-filter-actions { display:flex; gap:7px; align-items:center; margin-left:auto; }
+  .dash-btn-apply {
+    display:flex; align-items:center; gap:5px;
+    padding:7px 16px; background:var(--accent); color:#fff; border:none;
+    border-radius:var(--radius-sm); font-family:var(--font); font-size:0.8rem;
+    font-weight:600; cursor:pointer; transition:all 0.15s;
+    box-shadow:0 2px 8px rgba(29,78,216,0.2);
+  }
+  .dash-btn-apply:hover { background:#1e40af; transform:translateY(-1px); }
+  .dash-btn-clear {
+    display:flex; align-items:center; gap:5px;
+    padding:7px 14px; background:var(--surface2); color:var(--text2);
+    border:1.5px solid var(--border); border-radius:var(--radius-sm);
+    font-family:var(--font); font-size:0.8rem; font-weight:600;
+    cursor:pointer; transition:all 0.15s;
+  }
+  .dash-btn-clear:hover { border-color:#dc2626; color:#dc2626; background:#fff5f5; }
+  .dash-filter-result {
+    font-size:0.72rem; color:var(--text3); padding:3px 10px;
+    background:var(--surface3); border-radius:20px;
+    font-family:var(--font-mono); font-weight:600; white-space:nowrap;
+    display:none;
+  }
+  .dash-filter-result.active { display:inline-flex; align-items:center; gap:5px; }
+  .dash-filter-result.filtered { background:#eff6ff; color:var(--accent); border:1px solid #bfdbfe; }
+
   /* ── ITEMS PAGE ── */
   .items-page { position:relative; z-index:1; padding:24px 28px; max-width:1500px; margin:0 auto; }
   .items-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; flex-wrap:wrap; gap:12px; }
@@ -209,9 +270,20 @@
 
   /* Table */
   .table-wrap { background:#fff; border:1px solid var(--border); border-radius:var(--radius); overflow:auto; box-shadow:var(--shadow); }
-  table { width:100%; border-collapse:collapse; font-size:0.78rem; min-width:1250px; }
-  thead th { padding:11px 13px; text-align:left; font-size:0.65rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--text2); border-bottom:2px solid var(--border); background:var(--surface2); white-space:nowrap; }
-  thead th.r { text-align:right; }
+  table { width:100%; border-collapse:collapse; font-size:0.78rem; min-width:1300px; }
+  thead th {
+    padding:11px 13px; text-align:center; font-size:0.65rem; font-weight:700;
+    letter-spacing:0.08em; text-transform:uppercase; color:var(--text2);
+    border-bottom:2px solid var(--border); background:var(--surface2);
+    white-space:nowrap; cursor:pointer; user-select:none;
+    transition:background 0.12s, color 0.12s;
+  }
+  thead th:hover { background:#eef2ff; color:var(--accent); }
+  thead th.th-sorted { background:#eef2ff; color:var(--accent); }
+  thead th:last-child { cursor:default; }
+  thead th:last-child:hover { background:var(--surface2); color:var(--text2); }
+  thead th.r { text-align:center; }
+  .sort-icon { font-size:0.6rem; margin-left:2px; opacity:0.8; font-style:normal; }
   tbody tr { border-bottom:1px solid rgba(15,23,42,0.04); transition:background 0.12s; }
   tbody tr:last-child { border-bottom:none; }
   tbody tr:hover { background:#f8faff; }
@@ -469,6 +541,41 @@
       </div>
     </div>
 
+    <!-- ── DASHBOARD FILTER BAR ── -->
+    <div class="dash-filter-bar">
+      <div class="dash-filter-group">
+        <span class="dash-filter-label">📅 วันที่บันทึก</span>
+        <div class="dash-date-range">
+          <div class="dash-date-wrap">
+            <span class="dash-date-icon">จาก</span>
+            <input type="date" class="dash-date-input" id="dash-date-from" onchange="applyDashFilter()">
+          </div>
+          <span class="dash-date-sep">—</span>
+          <div class="dash-date-wrap">
+            <span class="dash-date-icon">ถึง</span>
+            <input type="date" class="dash-date-input" id="dash-date-to" onchange="applyDashFilter()">
+          </div>
+        </div>
+      </div>
+      <div class="dash-filter-group">
+        <span class="dash-filter-label">🌏 Regional</span>
+        <select class="dash-filter-sel" id="dash-filter-regional" onchange="applyDashFilter()">
+          <option value="">ทุก Regional</option>
+        </select>
+      </div>
+      <div class="dash-filter-actions">
+        <button class="dash-btn-apply" onclick="applyDashFilter()">
+          <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z"/></svg>
+          แสดงผล
+        </button>
+        <button class="dash-btn-clear" onclick="clearDashFilter()">
+          <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+          ล้างตัวกรอง
+        </button>
+      </div>
+      <div class="dash-filter-result" id="dash-filter-result"></div>
+    </div>
+
     <!-- KPI -->
     <div class="kpi-grid">
       <div class="kpi-card c-blue"><div class="kpi-stripe"></div><div class="kpi-icon">📦</div><div class="kpi-label">รายการทั้งหมด</div><div class="kpi-value" id="kpi-total">0</div><div class="kpi-sub">รายการสินค้า</div></div>
@@ -540,6 +647,55 @@
         </div>
       </div>
     </div>
+
+    <!-- ── TOP 5 ITEMS: ลบมากสุด vs บวกมากสุด ── -->
+    <div class="charts-row" style="margin-top:14px">
+
+      <!-- Top 5 มูลค่า Diff ลบมากสุด -->
+      <div class="chart-card">
+        <div class="card-title">
+          📉 Top 5 <span style="background:#fef2f2;color:#dc2626;border:1px solid #fecaca;border-radius:4px;padding:1px 8px;font-size:0.68rem;font-weight:700;margin:0 4px">Diff ลบมากสุด</span>
+          <span style="font-weight:400;color:var(--text3);font-size:0.72rem">(รวม Item เดียวกัน / สาขาเดียวกัน)</span>
+        </div>
+        <div class="store-table-wrap">
+          <table class="store-table">
+            <thead><tr>
+              <th style="width:32px">#</th>
+              <th>Store</th>
+              <th>Item</th>
+              <th>Desc</th>
+              <th class="r">มูลค่า Diff รวม</th>
+            </tr></thead>
+            <tbody id="top5-neg-tbody">
+              <tr><td colspan="5"><div class="empty-state" style="padding:12px"><p>ยังไม่มีข้อมูล</p></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Top 5 มูลค่า Diff บวกมากสุด -->
+      <div class="chart-card">
+        <div class="card-title">
+          📈 Top 5 <span style="background:#ecfdf5;color:#059669;border:1px solid #6ee7b7;border-radius:4px;padding:1px 8px;font-size:0.68rem;font-weight:700;margin:0 4px">Diff บวกมากสุด</span>
+          <span style="font-weight:400;color:var(--text3);font-size:0.72rem">(รวม Item เดียวกัน / สาขาเดียวกัน)</span>
+        </div>
+        <div class="store-table-wrap">
+          <table class="store-table">
+            <thead><tr>
+              <th style="width:32px">#</th>
+              <th>Store</th>
+              <th>Item</th>
+              <th>Desc</th>
+              <th class="r">มูลค่า Diff รวม</th>
+            </tr></thead>
+            <tbody id="top5-pos-tbody">
+              <tr><td colspan="5"><div class="empty-state" style="padding:12px"><p>ยังไม่มีข้อมูล</p></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
   </div>
 </div>
 
@@ -573,19 +729,27 @@
       <table>
         <thead>
           <tr>
-            <th>#</th>
-            <th>Regional</th><th>Store</th><th>Zone</th><th>Dept</th><th>Class</th>
-            <th>Item</th><th>Desc</th>
-            <th class="r">Com</th>
-            <th class="r">ราคาสินค้า</th>
-            <th class="r">Count</th>
-            <th class="r">Diff</th>
-            <th class="r">มูลค่า Diff</th>
-            <th>Remark</th><th>Status</th><th></th>
+            <th data-col="#" onclick="sortTable('#')">#<span class="sort-icon" id="si-#"></span></th>
+            <th data-col="createdAt" onclick="sortTable('createdAt')">Date<span class="sort-icon" id="si-createdAt"></span></th>
+            <th data-col="regional" onclick="sortTable('regional')">Regional<span class="sort-icon" id="si-regional"></span></th>
+            <th data-col="storeNum" onclick="sortTable('storeNum')">Store<span class="sort-icon" id="si-storeNum"></span></th>
+            <th data-col="zone" onclick="sortTable('zone')">Zone<span class="sort-icon" id="si-zone"></span></th>
+            <th data-col="dept" onclick="sortTable('dept')">Dept<span class="sort-icon" id="si-dept"></span></th>
+            <th data-col="cls" onclick="sortTable('cls')">Class<span class="sort-icon" id="si-cls"></span></th>
+            <th data-col="item" onclick="sortTable('item')">Item<span class="sort-icon" id="si-item"></span></th>
+            <th data-col="desc" onclick="sortTable('desc')">Desc<span class="sort-icon" id="si-desc"></span></th>
+            <th class="r" data-col="price" onclick="sortTable('price')">ราคาสินค้า<span class="sort-icon" id="si-price"></span></th>
+            <th class="r" data-col="com" onclick="sortTable('com')">Com<span class="sort-icon" id="si-com"></span></th>
+            <th class="r" data-col="count" onclick="sortTable('count')">Count<span class="sort-icon" id="si-count"></span></th>
+            <th class="r" data-col="diff" onclick="sortTable('diff')">Diff<span class="sort-icon" id="si-diff"></span></th>
+            <th class="r" data-col="diffVal" onclick="sortTable('diffVal')">มูลค่า Diff<span class="sort-icon" id="si-diffVal"></span></th>
+            <th data-col="remark" onclick="sortTable('remark')">Remark<span class="sort-icon" id="si-remark"></span></th>
+            <th data-col="status" onclick="sortTable('status')">Status<span class="sort-icon" id="si-status"></span></th>
+            <th></th>
           </tr>
         </thead>
         <tbody id="table-body">
-          <tr><td colspan="16"><div class="empty-state"><div class="icon">📦</div><p>ยังไม่มีรายการสินค้า — กด Add Item เพื่อเพิ่ม</p></div></td></tr>
+          <tr><td colspan="17"><div class="empty-state"><div class="icon">📦</div><p>ยังไม่มีรายการสินค้า — กด Add Item เพื่อเพิ่ม</p></div></td></tr>
         </tbody>
       </table>
     </div>
@@ -602,13 +766,39 @@
     <div class="modal-body">
       <div class="sec-title">📍 Location</div>
       <div class="fg" style="margin-bottom:14px">
-        <div class="field"><label>Regional *</label><input class="fi" id="f-regional" placeholder="เช่น North, South, BKK"></div>
-        <div class="field"><label>Store *</label><input class="fi" id="f-store" placeholder="เช่น Lotus Rama9, BigC Ratchada"></div>
-        <div class="field"><label>Zone *</label><input class="fi" id="f-zone" placeholder="เช่น A, B, C"></div>
-        <div class="field"><label>Dept</label><input class="fi" id="f-dept" placeholder="เช่น Grocery, Fresh, Frozen"></div>
+
+        <!-- Store Number — 3 digits → auto-fill Regional & Zone -->
+        <div class="field" style="position:relative">
+          <label>Store No. * <span style="font-weight:400;text-transform:none;font-size:0.62rem;color:var(--text3)">(3 หลัก)</span></label>
+          <input class="fi" id="f-store-num" placeholder="เช่น 006, 023, 301"
+            maxlength="3" inputmode="numeric" pattern="[0-9]{3}"
+            oninput="onStoreNumInput(this.value)" autocomplete="off">
+          <div id="store-lookup-badge" style="display:none;position:absolute;right:10px;top:50%;transform:translateY(-2px);
+            font-size:0.68rem;font-weight:700;padding:2px 8px;border-radius:20px;
+            background:#d1fae5;color:#059669;border:1px solid #6ee7b7;pointer-events:none;">
+            ✓ พบข้อมูล
+          </div>
+          <div id="store-lookup-miss" style="display:none;position:absolute;right:10px;top:50%;transform:translateY(-2px);
+            font-size:0.68rem;font-weight:700;padding:2px 8px;border-radius:20px;
+            background:#fef2f2;color:#dc2626;border:1px solid #fecaca;pointer-events:none;">
+            ไม่พบ
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Regional *</label>
+          <input class="fi" id="f-regional" placeholder="ขึ้นอัตโนมัติจาก Store No." readonly
+            style="background:#f8fafc;cursor:default;caret-color:transparent">
+        </div>
+        <div class="field">
+          <label>Zone *</label>
+          <input class="fi" id="f-zone" placeholder="ขึ้นอัตโนมัติจาก Store No." readonly
+            style="background:#f8fafc;cursor:default;caret-color:transparent">
+        </div>
       </div>
       <div class="sec-title">📦 Item Information</div>
       <div class="fg">
+        <div class="field"><label>Dept</label><input class="fi" id="f-dept" placeholder="เช่น Grocery, Fresh, Frozen"></div>
         <div class="field"><label>Class</label><input class="fi" id="f-class" placeholder="001"></div>
         <div class="field"><label>Item *</label><input class="fi" id="f-item" placeholder="รหัสสินค้า"></div>
         <div class="field full"><label>Description</label><input class="fi" id="f-desc" placeholder="ชื่อสินค้า / รายละเอียด"></div>
@@ -656,6 +846,53 @@
    (databaseURL, authDomain, storageBucket, messagingSenderId
     คำนวณจาก projectId ได้อัตโนมัติ — แต่ถ้ามีค่าจริงให้ใส่)
    ════════════════════════════════════════════════════════════ */
+
+/* ══════════════════════════════════════════
+   STORE LOOKUP TABLE  (จาก DATA_REG.xlsm · 165 สาขา)
+   key = เลข Store 3 หลัก  →  { regional, zone }
+══════════════════════════════════════════ */
+const STORE_LOOKUP = {"001":{"regional":"Regional 2","zone":"Zone9"},"002":{"regional":"Regional 2","zone":"Zone9"},"003":{"regional":"Regional 2","zone":"Zone10"},"004":{"regional":"Regional 2","zone":"Zone6"},"005":{"regional":"Regional 3","zone":"Zone13"},"006":{"regional":"Regional 1","zone":"Zone1"},"007":{"regional":"Regional 3","zone":"Zone11"},"008":{"regional":"Regional 3","zone":"Zone12"},"009":{"regional":"Regional 4","zone":"Zone17"},"010":{"regional":"Regional 1","zone":"Zone3"},"011":{"regional":"Regional 1","zone":"Zone2"},"012":{"regional":"Regional 1","zone":"Zone4"},"013":{"regional":"Regional 4","zone":"Zone16"},"014":{"regional":"Regional 3","zone":"Zone11"},"015":{"regional":"Regional 3","zone":"Zone14"},"016":{"regional":"Regional 1","zone":"Zone5"},"017":{"regional":"Regional 2","zone":"Zone7"},"018":{"regional":"Regional 2","zone":"Zone8"},"019":{"regional":"Regional 2","zone":"Zone6"},"020":{"regional":"Regional 3","zone":"Zone11"},"021":{"regional":"Regional 2","zone":"Zone7"},"022":{"regional":"Regional 4","zone":"Zone17"},"023":{"regional":"Regional 1","zone":"Zone1"},"024":{"regional":"Regional 1","zone":"Zone3"},"025":{"regional":"Regional 1","zone":"Zone5"},"026":{"regional":"Regional 3","zone":"Zone14"},"027":{"regional":"Regional 4","zone":"Zone16"},"028":{"regional":"Regional 1","zone":"Zone4"},"029":{"regional":"Regional 4","zone":"Zone17"},"030":{"regional":"Regional 3","zone":"Zone12"},"031":{"regional":"Regional 4","zone":"Zone17"},"032":{"regional":"Regional 3","zone":"Zone11"},"033":{"regional":"Regional 3","zone":"Zone11"},"034":{"regional":"Regional 1","zone":"Zone1"},"035":{"regional":"Regional 4","zone":"Zone16"},"036":{"regional":"Regional 3","zone":"Zone15"},"037":{"regional":"Regional 1","zone":"Zone4"},"038":{"regional":"Regional 1","zone":"Zone5"},"039":{"regional":"Regional 3","zone":"Zone15"},"040":{"regional":"Regional 3","zone":"Zone13"},"041":{"regional":"Regional 1","zone":"Zone1"},"042":{"regional":"Regional 2","zone":"Zone9"},"043":{"regional":"Regional 3","zone":"Zone15"},"044":{"regional":"Regional 3","zone":"Zone14"},"045":{"regional":"Regional 1","zone":"Zone2"},"046":{"regional":"Regional 2","zone":"Zone6"},"047":{"regional":"Regional 1","zone":"Zone5"},"048":{"regional":"Regional 1","zone":"Zone3"},"049":{"regional":"Regional 2","zone":"Zone6"},"050":{"regional":"Regional 1","zone":"Zone1"},"051":{"regional":"Regional 3","zone":"Zone12"},"052":{"regional":"Regional 1","zone":"Zone2"},"053":{"regional":"Regional 3","zone":"Zone15"},"054":{"regional":"Regional 3","zone":"Zone12"},"055":{"regional":"Regional 1","zone":"Zone3"},"056":{"regional":"Regional 1","zone":"Zone5"},"057":{"regional":"Regional 2","zone":"Zone8"},"058":{"regional":"Regional 1","zone":"Zone3"},"059":{"regional":"Regional 4","zone":"Zone17"},"060":{"regional":"Regional 3","zone":"Zone14"},"061":{"regional":"Regional 1","zone":"Zone4"},"062":{"regional":"Regional 4","zone":"Zone16"},"063":{"regional":"Regional 1","zone":"Zone3"},"064":{"regional":"Regional 4","zone":"Zone17"},"065":{"regional":"Regional 1","zone":"Zone3"},"066":{"regional":"Regional 3","zone":"Zone14"},"067":{"regional":"Regional 1","zone":"Zone1"},"068":{"regional":"Regional 2","zone":"Zone6"},"069":{"regional":"Regional 4","zone":"Zone16"},"070":{"regional":"Regional 1","zone":"Zone2"},"071":{"regional":"Regional 4","zone":"Zone16"},"072":{"regional":"Regional 2","zone":"Zone6"},"073":{"regional":"Regional 1","zone":"Zone2"},"074":{"regional":"Regional 1","zone":"Zone5"},"075":{"regional":"Regional 4","zone":"Zone16"},"076":{"regional":"Regional 3","zone":"Zone15"},"077":{"regional":"Regional 4","zone":"Zone17"},"078":{"regional":"Regional 2","zone":"Zone8"},"079":{"regional":"Regional 1","zone":"Zone4"},"080":{"regional":"Regional 1","zone":"Zone4"},"081":{"regional":"Regional 1","zone":"Zone1"},"082":{"regional":"Regional 3","zone":"Zone12"},"083":{"regional":"Regional 2","zone":"Zone7"},"084":{"regional":"Regional 3","zone":"Zone14"},"085":{"regional":"Regional 4","zone":"Zone17"},"086":{"regional":"Regional 2","zone":"Zone10"},"087":{"regional":"Regional 1","zone":"Zone1"},"089":{"regional":"Regional 1","zone":"Zone2"},"096":{"regional":"Regional 2","zone":"Zone10"},"100":{"regional":"Regional 1","zone":"Zone2"},"101":{"regional":"Regional 3","zone":"Zone14"},"102":{"regional":"Regional 3","zone":"Zone11"},"103":{"regional":"Regional 1","zone":"Zone2"},"104":{"regional":"Regional 4","zone":"Zone16"},"105":{"regional":"Regional 4","zone":"Zone16"},"106":{"regional":"Regional 3","zone":"Zone11"},"107":{"regional":"Regional 1","zone":"Zone3"},"108":{"regional":"Regional 3","zone":"Zone13"},"109":{"regional":"Regional 3","zone":"Zone13"},"110":{"regional":"Regional 3","zone":"Zone15"},"111":{"regional":"Regional 2","zone":"Zone6"},"112":{"regional":"Regional 2","zone":"Zone8"},"113":{"regional":"Regional 2","zone":"Zone9"},"114":{"regional":"Regional 1","zone":"Zone5"},"115":{"regional":"Regional 2","zone":"Zone7"},"116":{"regional":"Regional 1","zone":"Zone4"},"117":{"regional":"Regional 2","zone":"Zone10"},"118":{"regional":"Regional 2","zone":"Zone9"},"119":{"regional":"Regional 1","zone":"Zone5"},"120":{"regional":"Regional 2","zone":"Zone7"},"121":{"regional":"Regional 2","zone":"Zone9"},"122":{"regional":"Regional 2","zone":"Zone8"},"123":{"regional":"Regional 2","zone":"Zone8"},"124":{"regional":"Regional 2","zone":"Zone9"},"125":{"regional":"Regional 3","zone":"Zone15"},"126":{"regional":"Regional 2","zone":"Zone10"},"127":{"regional":"Regional 2","zone":"Zone8"},"128":{"regional":"Regional 3","zone":"Zone12"},"129":{"regional":"Regional 3","zone":"Zone13"},"130":{"regional":"Regional 3","zone":"Zone12"},"131":{"regional":"Regional 3","zone":"Zone14"},"132":{"regional":"Regional 3","zone":"Zone14"},"133":{"regional":"Regional 2","zone":"Zone10"},"134":{"regional":"Regional 3","zone":"Zone13"},"135":{"regional":"Regional 2","zone":"Zone8"},"136":{"regional":"Regional 1","zone":"Zone4"},"137":{"regional":"Regional 2","zone":"Zone10"},"138":{"regional":"Regional 2","zone":"Zone10"},"139":{"regional":"Regional 2","zone":"Zone10"},"140":{"regional":"Regional 2","zone":"Zone7"},"141":{"regional":"Regional 3","zone":"Zone12"},"142":{"regional":"Regional 2","zone":"Zone8"},"143":{"regional":"Regional 2","zone":"Zone9"},"144":{"regional":"Regional 3","zone":"Zone12"},"145":{"regional":"Regional 2","zone":"Zone7"},"146":{"regional":"Regional 1","zone":"Zone2"},"147":{"regional":"Regional 2","zone":"Zone9"},"148":{"regional":"Regional 3","zone":"Zone13"},"149":{"regional":"Regional 2","zone":"Zone6"},"150":{"regional":"Regional 2","zone":"Zone7"},"151":{"regional":"Regional 2","zone":"Zone9"},"152":{"regional":"Regional 2","zone":"Zone6"},"153":{"regional":"Regional 4","zone":"Zone17"},"154":{"regional":"Regional 3","zone":"Zone12"},"155":{"regional":"Regional 2","zone":"Zone7"},"156":{"regional":"Regional 2","zone":"Zone8"},"157":{"regional":"Regional 3","zone":"Zone11"},"158":{"regional":"Regional 1","zone":"Zone5"},"159":{"regional":"Regional 1","zone":"Zone3"},"160":{"regional":"Regional 2","zone":"Zone6"},"161":{"regional":"Regional 1","zone":"Zone4"},"162":{"regional":"Regional 3","zone":"Zone13"},"163":{"regional":"Regional 4","zone":"Zone17"},"164":{"regional":"Regional 1","zone":"Zone5"},"165":{"regional":"Regional 2","zone":"Zone10"},"166":{"regional":"Regional 4","zone":"Zone16"},"167":{"regional":"Regional 1","zone":"Zone1"},"168":{"regional":"Regional 3","zone":"Zone13"},"169":{"regional":"Regional 3","zone":"Zone15"},"170":{"regional":"Regional 3","zone":"Zone11"},"171":{"regional":"Regional 3","zone":"Zone11"},"172":{"regional":"Regional 1","zone":"Zone4"},"175":{"regional":"Regional 2","zone":"Zone8"},"301":{"regional":"Regional 2","zone":"Zone7"},"303":{"regional":"Regional 1","zone":"Zone1"}};
+
+/* Auto-fill Regional & Zone the moment Store No. reaches 3 digits */
+function onStoreNumInput(val) {
+  const raw   = val.replace(/\D/g, '').slice(0, 3);
+  const badge = document.getElementById('store-lookup-badge');
+  const miss  = document.getElementById('store-lookup-miss');
+  const fReg  = document.getElementById('f-regional');
+  const fZone = document.getElementById('f-zone');
+  const input = document.getElementById('f-store-num');
+
+  if (input.value !== raw) input.value = raw;   // strip non-digits live
+
+  badge.style.display = 'none';
+  miss.style.display  = 'none';
+
+  if (raw.length < 3) {
+    fReg.value  = '';
+    fZone.value = '';
+    fReg.style.borderColor  = '';
+    fZone.style.borderColor = '';
+    return;
+  }
+
+  const key  = raw.padStart(3, '0');
+  const data = STORE_LOOKUP[key];
+  if (data) {
+    fReg.value  = data.regional;
+    fZone.value = data.zone;
+    fReg.style.borderColor  = '#059669';
+    fZone.style.borderColor = '#059669';
+    badge.style.display = 'block';
+    setTimeout(() => document.getElementById('f-store').focus(), 80);
+  } else {
+    fReg.value  = '';
+    fZone.value = '';
+    fReg.style.borderColor  = '#dc2626';
+    fZone.style.borderColor = '#dc2626';
+    miss.style.display = 'block';
+  }
+}
+window.onStoreNumInput = onStoreNumInput;
 
 import { initializeApp }        from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getDatabase, ref, onValue, push, set, remove, update }
@@ -855,24 +1092,41 @@ window.calcDiff = calcDiff;
 function openModal(idx=-1) {
   editIndex = idx;
   document.getElementById('modal-title').textContent = idx===-1 ? 'Add Item' : 'Edit Item';
-  const IDS = ['f-regional','f-store','f-zone','f-dept','f-class','f-item','f-desc','f-price','f-com','f-count','f-remark'];
+  const IDS = ['f-store-num','f-regional','f-zone','f-dept','f-class','f-item','f-desc','f-price','f-com','f-count','f-remark'];
   if (idx >= 0) {
     const it = items[idx];
     const map = {
-      'f-regional':it.regional,'f-store':it.store,'f-zone':it.zone,'f-dept':it.dept,
-      'f-class':it.cls,'f-item':it.item,'f-desc':it.desc,'f-price':it.price,
-      'f-com':it.com,'f-count':it.count,'f-remark':it.remark
+      'f-store-num': it.storeNum||'',
+      'f-regional':  it.regional,
+      'f-zone':      it.zone,
+      'f-dept':      it.dept,
+      'f-class':     it.cls,
+      'f-item':      it.item,
+      'f-desc':      it.desc,
+      'f-price':     it.price,
+      'f-com':       it.com,
+      'f-count':     it.count,
+      'f-remark':    it.remark
     };
     Object.entries(map).forEach(([id,v])=>document.getElementById(id).value=v||'');
     document.getElementById('f-status').value = it.status||'Pending';
+    const sn = (it.storeNum||'').padStart(3,'0');
+    if (sn && STORE_LOOKUP[sn]) {
+      document.getElementById('f-regional').style.borderColor = '#059669';
+      document.getElementById('f-zone').style.borderColor     = '#059669';
+      document.getElementById('store-lookup-badge').style.display = 'block';
+      document.getElementById('store-lookup-miss').style.display  = 'none';
+    }
     calcDiff();
   } else {
-    IDS.forEach(id=>document.getElementById(id).value='');
+    IDS.forEach(id=>{ const el=document.getElementById(id); if(el){el.value=''; el.style.borderColor='';} });
     ['f-diff','f-diff-val'].forEach(id=>{ document.getElementById(id).value=''; document.getElementById(id).className='fi calc'; });
     document.getElementById('f-status').value='Pending';
+    document.getElementById('store-lookup-badge').style.display='none';
+    document.getElementById('store-lookup-miss').style.display='none';
   }
   document.getElementById('modal-overlay').classList.add('open');
-  setTimeout(()=>document.getElementById('f-regional').focus(),100);
+  setTimeout(()=>document.getElementById('f-store-num').focus(),100);
 }
 window.openModal = openModal;
 
@@ -883,9 +1137,15 @@ function handleOverlayClick(e) { if(e.target===document.getElementById('modal-ov
 window.handleOverlayClick = handleOverlayClick;
 
 function saveItem() {
-  const vals = ['f-regional','f-store','f-zone','f-item'].map(id=>({ id, v:document.getElementById(id).value.trim() }));
+  // Validate required fields (store-num triggers regional/zone auto-fill)
+  const vals = ['f-store-num','f-item'].map(id=>({ id, v:document.getElementById(id).value.trim() }));
   let ok = true;
   vals.forEach(({id,v})=>{ document.getElementById(id).style.borderColor = v ? '' : '#dc2626'; if(!v) ok=false; });
+  // Also ensure regional & zone got filled (from lookup or manual)
+  ['f-regional','f-zone'].forEach(id => {
+    const v = document.getElementById(id).value.trim();
+    if (!v) ok = false;   // border already red from onStoreNumInput
+  });
   if (!ok) return;
   vals.forEach(({id})=>document.getElementById(id).style.borderColor='');
   const com   = parseFloat(document.getElementById('f-com').value)   || 0;
@@ -894,8 +1154,9 @@ function saveItem() {
   const diff  = count - com;
   const diffVal = diff * price;
   const obj = {
+    storeNum : document.getElementById('f-store-num').value.trim().padStart(3,'0'),
     regional : document.getElementById('f-regional').value.trim(),
-    store    : document.getElementById('f-store').value.trim(),
+    store    : document.getElementById('f-store-num').value.trim().padStart(3,'0'),
     zone     : document.getElementById('f-zone').value.trim(),
     dept     : document.getElementById('f-dept').value.trim(),
     cls      : document.getElementById('f-class').value.trim(),
@@ -929,6 +1190,31 @@ const fmt  = n => new Intl.NumberFormat('th-TH',{minimumFractionDigits:0,maximum
 const fmtB = n => '฿'+new Intl.NumberFormat('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2}).format(n);
 
 /* ══════════════════════════════════════════
+   SORT STATE
+══════════════════════════════════════════ */
+let sortCol = null;
+let sortDir = 1;  // 1=asc, -1=desc
+
+function sortTable(col) {
+  if (sortCol === col) {
+    sortDir *= -1;
+  } else {
+    sortCol = col;
+    sortDir = 1;
+  }
+  // Update sort icon UI
+  document.querySelectorAll('.sort-icon').forEach(el => el.textContent = '');
+  const icon = document.getElementById('si-' + col);
+  if (icon) icon.textContent = sortDir === 1 ? ' ▲' : ' ▼';
+  // Update header highlight
+  document.querySelectorAll('thead th').forEach(th => th.classList.remove('th-sorted'));
+  const ths = document.querySelectorAll('thead th');
+  ths.forEach(th => { if (th.dataset.col === col) th.classList.add('th-sorted'); });
+  renderTable();
+}
+window.sortTable = sortTable;
+
+/* ══════════════════════════════════════════
    RENDER TABLE
 ══════════════════════════════════════════ */
 function renderTable() {
@@ -937,40 +1223,92 @@ function renderTable() {
   const fst   = document.getElementById('filter-store').value;
   const fz    = document.getElementById('filter-zone').value;
   const fstat = document.getElementById('filter-status').value;
-  const filtered = items.map((it,i)=>({...it,_i:i})).filter(it=>(
-    (!q  || (it.item+it.desc+it.store).toLowerCase().includes(q)) &&
-    (!fr  || it.regional===fr) && (!fst || it.store===fst) &&
-    (!fz  || it.zone===fz)     && (!fstat || it.status===fstat)
+
+  let filtered = items.map((it,i)=>({...it,_i:i})).filter(it=>(
+    (!q    || (it.item+it.desc+(it.storeNum||it.store||'')).toLowerCase().includes(q)) &&
+    (!fr   || it.regional===fr) &&
+    (!fst  || (it.storeNum||it.store)===fst) &&
+    (!fz   || it.zone===fz) &&
+    (!fstat|| it.status===fstat)
   ));
+
+  // Apply sort
+  if (sortCol && sortCol !== '#') {
+    filtered.sort((a, b) => {
+      let va = a[sortCol] ?? '';
+      let vb = b[sortCol] ?? '';
+      // numeric cols
+      if (['com','price','count','diff','diffVal'].includes(sortCol)) {
+        va = parseFloat(va) || 0;
+        vb = parseFloat(vb) || 0;
+        return (va - vb) * sortDir;
+      }
+      // storeNum: sort numerically
+      if (sortCol === 'storeNum') {
+        va = parseInt(va, 10) || 0;
+        vb = parseInt(vb, 10) || 0;
+        return (va - vb) * sortDir;
+      }
+      // createdAt: sort by timestamp
+      if (sortCol === 'createdAt') {
+        va = va ? new Date(va).getTime() : 0;
+        vb = vb ? new Date(vb).getTime() : 0;
+        return (va - vb) * sortDir;
+      }
+      return String(va).localeCompare(String(vb), 'th') * sortDir;
+    });
+  }
+
   document.getElementById('items-count-tag').textContent = filtered.length;
   const tb = document.getElementById('table-body');
   if (!filtered.length) {
-    tb.innerHTML = `<tr><td colspan="16"><div class="empty-state"><div class="icon">📦</div><p>${!items.length?'ยังไม่มีรายการสินค้า — กด Add Item เพื่อเพิ่ม':'ไม่พบรายการที่ตรงกับเงื่อนไขที่ค้นหา'}</p></div></td></tr>`;
+    tb.innerHTML = `<tr><td colspan="17"><div class="empty-state"><div class="icon">📦</div><p>${!items.length?'ยังไม่มีรายการสินค้า — กด Add Item เพื่อเพิ่ม':'ไม่พบรายการที่ตรงกับเงื่อนไขที่ค้นหา'}</p></div></td></tr>`;
     return;
   }
+
+  // Thai date formatter — วัน/เดือน/ปี เวลา (timezone: Asia/Bangkok)
+  const fmtDate = iso => {
+    if (!iso) return '<span style="color:var(--text3);font-size:0.68rem">—</span>';
+    try {
+      const d = new Date(iso);
+      const datePart = d.toLocaleDateString('th-TH', {
+        day: '2-digit', month: '2-digit', year: 'numeric',
+        timeZone: 'Asia/Bangkok'
+      });
+      const timePart = d.toLocaleTimeString('th-TH', {
+        hour: '2-digit', minute: '2-digit',
+        timeZone: 'Asia/Bangkok', hour12: false
+      });
+      return `<div style="font-size:0.74rem;font-family:var(--font-mono);color:var(--text2);white-space:nowrap;font-weight:600">${datePart}</div>
+              <div style="font-size:0.67rem;color:var(--text3);font-family:var(--font-mono)">${timePart}</div>`;
+    } catch { return '<span style="color:var(--text3);font-size:0.68rem">—</span>'; }
+  };
+
   const sm = {Match:'match',Over:'over',Short:'short',Pending:'pending'};
   tb.innerHTML = filtered.map((it, i) => {
     const ri  = it._i;
     const dc  = it.diff>0?'c-pos':it.diff<0?'c-neg':'c-zero';
     const dvp = it.diffVal>=0?'+':'';
     const dvc = it.diffVal>0?'c-pos':it.diffVal<0?'c-neg':'c-zero';
+    const displayStore = it.storeNum || it.store || '';
     return `<tr>
-      <td style="color:var(--text3);font-size:0.72rem;font-family:var(--font-mono)">${i+1}</td>
+      <td style="color:var(--text3);font-size:0.72rem;font-family:var(--font-mono);text-align:center">${i+1}</td>
+      <td style="white-space:nowrap;text-align:center">${fmtDate(it.createdAt)}</td>
       <td class="td-reg">${it.regional||''}</td>
-      <td class="td-store">${it.store||''}</td>
-      <td class="td-zone">${it.zone||''}</td>
-      <td style="color:var(--text2)">${it.dept||''}</td>
-      <td style="color:var(--text3);font-family:var(--font-mono);font-size:0.73rem">${it.cls||''}</td>
-      <td class="td-item">${it.item||''}</td>
+      <td class="td-store" style="font-family:var(--font-mono);font-weight:700;color:var(--accent);text-align:center">${displayStore}</td>
+      <td class="td-zone" style="text-align:center">${it.zone||''}</td>
+      <td style="color:var(--text2);text-align:center">${it.dept||''}</td>
+      <td style="color:var(--text3);font-family:var(--font-mono);font-size:0.73rem;text-align:center">${it.cls||''}</td>
+      <td class="td-item" style="text-align:center">${it.item||''}</td>
       <td style="max-width:150px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text2)">${it.desc||''}</td>
-      <td class="td-num" style="color:var(--text2)">${fmt(it.com||0)}</td>
-      <td class="td-num bold">${fmtB(it.price||0)}</td>
-      <td class="td-num bold">${fmt(it.count||0)}</td>
-      <td class="td-num bold ${dc}">${it.diff>0?'+':''}${fmt(it.diff||0)}</td>
-      <td class="td-num bold ${dvc}">${dvp}${fmtB(it.diffVal||0)}</td>
+      <td class="td-num bold" style="text-align:right">${fmtB(it.price||0)}</td>
+      <td class="td-num" style="color:var(--text2);text-align:right">${fmt(it.com||0)}</td>
+      <td class="td-num bold" style="text-align:right">${fmt(it.count||0)}</td>
+      <td class="td-num bold ${dc}" style="text-align:right">${it.diff>0?'+':''}${fmt(it.diff||0)}</td>
+      <td class="td-num bold ${dvc}" style="text-align:right">${dvp}${fmtB(it.diffVal||0)}</td>
       <td style="color:var(--text3);font-size:0.72rem;max-width:100px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${it.remark||''}</td>
-      <td><span class="badge ${sm[it.status]||'pending'}">${it.status||'Pending'}</span></td>
-      <td style="white-space:nowrap">
+      <td style="text-align:center"><span class="badge ${sm[it.status]||'pending'}">${it.status||'Pending'}</span></td>
+      <td style="white-space:nowrap;text-align:center">
         <button class="action-btn" onclick="openModal(${ri})">Edit</button>
         ${currentRole==='admin'?`<button class="action-btn" onclick="deleteItem(${ri})" style="margin-left:3px;color:var(--red-lt)">Del</button>`:''}
       </td>
@@ -989,7 +1327,7 @@ function syncFilters() {
     if(vals.includes(c)) s.value=c;
   };
   setOpts('filter-regional',[...new Set(items.map(it=>it.regional))].filter(Boolean).sort(),'ทุก Regional');
-  setOpts('filter-store',   [...new Set(items.map(it=>it.store))].filter(Boolean).sort(),   'ทุก Store');
+  setOpts('filter-store',   [...new Set(items.map(it=>it.storeNum||it.store))].filter(Boolean).sort((a,b)=>parseInt(a)-parseInt(b)), 'ทุก Store');
   setOpts('filter-zone',    [...new Set(items.map(it=>it.zone))].filter(Boolean).sort(),    'ทุก Zone');
 }
 
@@ -1009,15 +1347,28 @@ function exportExcel() {
     (!fz  ||it.zone===fz)     && (!fstat||it.status===fstat)
   ));
   if (!data.length) { alert('ไม่มีข้อมูลในตัวกรองที่เลือก'); return; }
-  const headers = ['#','Regional','Store','Zone','Dept','Class','Item','Description','Com','ราคาสินค้า (฿)','Count','Diff','มูลค่า Diff (฿)','Remark','Status','วันที่บันทึก','แก้ไขล่าสุด','แก้ไขโดย'];
-  const rows = data.map((it,i)=>[
-    i+1, it.regional, it.store, it.zone, it.dept, it.cls, it.item, it.desc,
-    it.com, it.price, it.count, it.diff, parseFloat((it.diffVal||0).toFixed(2)),
-    it.remark, it.status,
-    it.createdAt ? new Date(it.createdAt).toLocaleDateString('th-TH') : '',
-    it.updatedAt ? new Date(it.updatedAt).toLocaleDateString('th-TH') : '',
-    it.updatedBy || ''
-  ]);
+  const headers = ['#','Regional','วันที่บันทึก','Store','Zone','Dept','Class','Item','Description','ราคาสินค้า (฿)','Com','Count','Diff','มูลค่า Diff (฿)','Remark','Status','แก้ไขล่าสุด','แก้ไขโดย'];
+  const rows = data.map((it,i)=>{
+    const toThaiDate = iso => {
+      if (!iso) return '';
+      try {
+        return new Date(iso).toLocaleString('th-TH', {
+          day:'2-digit', month:'2-digit', year:'numeric',
+          hour:'2-digit', minute:'2-digit', second:'2-digit',
+          timeZone:'Asia/Bangkok', hour12:false
+        });
+      } catch { return iso; }
+    };
+    return [
+      i+1, it.regional,
+      toThaiDate(it.createdAt),
+      it.storeNum||it.store, it.zone, it.dept, it.cls, it.item, it.desc,
+      it.price, it.com, it.count, it.diff, parseFloat((it.diffVal||0).toFixed(2)),
+      it.remark, it.status,
+      toThaiDate(it.updatedAt),
+      it.updatedBy || ''
+    ];
+  });
   const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
   ws['!cols'] = [4,14,20,8,14,8,14,28,8,14,8,8,16,20,10,14,14,12].map(w=>({wch:w}));
   const wb = XLSX.utils.book_new();
@@ -1034,15 +1385,92 @@ function exportExcel() {
 window.exportExcel = exportExcel;
 
 /* ══════════════════════════════════════════
+   DASHBOARD FILTER STATE
+══════════════════════════════════════════ */
+let dashFilteredItems = null;  // null = no filter applied (show all)
+
+function syncDashRegionalDropdown() {
+  const sel = document.getElementById('dash-filter-regional');
+  if (!sel) return;
+  const cur = sel.value;
+  const regs = [...new Set(items.map(it=>it.regional).filter(Boolean))].sort();
+  sel.innerHTML = '<option value="">ทุก Regional</option>' +
+    regs.map(r=>`<option value="${r}"${r===cur?' selected':''}>${r}</option>`).join('');
+}
+
+function applyDashFilter() {
+  const dateFrom  = document.getElementById('dash-date-from').value;
+  const dateTo    = document.getElementById('dash-date-to').value;
+  const regional  = document.getElementById('dash-filter-regional').value;
+  const resultEl  = document.getElementById('dash-filter-result');
+
+  const hasFilter = dateFrom || dateTo || regional;
+
+  if (!hasFilter) {
+    dashFilteredItems = null;
+    resultEl.className = 'dash-filter-result';
+    resultEl.textContent = '';
+    renderDashboard();
+    return;
+  }
+
+  const fromMs = dateFrom ? new Date(dateFrom).setHours(0,0,0,0)   : null;
+  const toMs   = dateTo   ? new Date(dateTo).setHours(23,59,59,999) : null;
+
+  dashFilteredItems = items.filter(it => {
+    // Regional filter
+    if (regional && it.regional !== regional) return false;
+    // Date range filter — use createdAt (fallback to updatedAt)
+    const ts = it.createdAt || it.updatedAt;
+    if (ts) {
+      const d = new Date(ts).getTime();
+      if (fromMs !== null && d < fromMs) return false;
+      if (toMs   !== null && d > toMs)   return false;
+    } else {
+      // If item has no date, exclude it when a date filter is active
+      if (fromMs !== null || toMs !== null) return false;
+    }
+    return true;
+  });
+
+  // Build label
+  const parts = [];
+  if (regional)  parts.push(`🌏 ${regional}`);
+  if (dateFrom)  parts.push(`จาก ${new Date(dateFrom).toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'numeric'})}`);
+  if (dateTo)    parts.push(`ถึง ${new Date(dateTo).toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'numeric'})}`);
+
+  resultEl.className = 'dash-filter-result active filtered';
+  resultEl.textContent = `⚡ กรอง: ${parts.join(' · ')} · ${dashFilteredItems.length} รายการ`;
+
+  renderDashboard();
+}
+window.applyDashFilter = applyDashFilter;
+
+function clearDashFilter() {
+  document.getElementById('dash-date-from').value = '';
+  document.getElementById('dash-date-to').value   = '';
+  document.getElementById('dash-filter-regional').value = '';
+  dashFilteredItems = null;
+  const resultEl = document.getElementById('dash-filter-result');
+  resultEl.className = 'dash-filter-result';
+  resultEl.textContent = '';
+  renderDashboard();
+}
+window.clearDashFilter = clearDashFilter;
+
+/* ══════════════════════════════════════════
    RENDER DASHBOARD
 ══════════════════════════════════════════ */
 function renderDashboard() {
-  const total      = items.length;
-  const stores     = new Set(items.map(it=>it.store)).size;
-  const totalCount = items.reduce((s,it)=>s+(it.count||0),0);
-  const valCount   = items.reduce((s,it)=>s+(it.count||0)*(it.price||0),0);
-  const valSys     = items.reduce((s,it)=>s+(it.com||0)*(it.price||0),0);
-  const totalDV    = items.reduce((s,it)=>s+(it.diffVal||0),0);
+  // Use filtered set if active, otherwise full items
+  const ds = dashFilteredItems !== null ? dashFilteredItems : items;
+
+  const total      = ds.length;
+  const stores     = new Set(ds.map(it=>it.storeNum||it.store)).size;
+  const totalCount = ds.reduce((s,it)=>s+(it.count||0),0);
+  const valCount   = ds.reduce((s,it)=>s+(it.count||0)*(it.price||0),0);
+  const valSys     = ds.reduce((s,it)=>s+(it.com||0)*(it.price||0),0);
+  const totalDV    = ds.reduce((s,it)=>s+(it.diffVal||0),0);
   document.getElementById('kpi-total').textContent     = fmt(total);
   document.getElementById('kpi-stores').textContent    = stores;
   document.getElementById('kpi-count').textContent     = fmt(totalCount);
@@ -1051,15 +1479,22 @@ function renderDashboard() {
   const dve = document.getElementById('kpi-diff-val');
   dve.textContent  = (totalDV>=0?'+':'')+fmtB(totalDV);
   dve.className    = 'kpi-value sm '+(totalDV>0?'diff-pos':totalDV<0?'diff-neg':'');
-  document.getElementById('dash-updated').textContent  = `Last updated: ${new Date().toLocaleDateString('th-TH',{year:'numeric',month:'long',day:'numeric',hour:'2-digit',minute:'2-digit'})}`;
+  document.getElementById('dash-updated').textContent  =
+    (dashFilteredItems !== null
+      ? `🔍 แสดงข้อมูลที่กรองแล้ว (${total} รายการ จาก ${items.length} รายการ) · `
+      : 'Last updated: ') +
+    new Date().toLocaleDateString('th-TH',{year:'numeric',month:'long',day:'numeric',hour:'2-digit',minute:'2-digit'});
+
+  // Sync regional dropdown with full items list (always)
+  syncDashRegionalDropdown();
 
   /* Regional */
   const rm={};
-  items.forEach(it=>{ const k=it.regional||'(ไม่ระบุ)'; if(!rm[k]) rm[k]={items:0,count:0,valCount:0,valSys:0,diffVal:0,stores:new Set()}; rm[k].items++; rm[k].count+=(it.count||0); rm[k].valCount+=(it.count||0)*(it.price||0); rm[k].valSys+=(it.com||0)*(it.price||0); rm[k].diffVal+=(it.diffVal||0); if(it.store) rm[k].stores.add(it.store); });
+  ds.forEach(it=>{ const k=it.regional||'(ไม่ระบุ)'; if(!rm[k]) rm[k]={items:0,count:0,valCount:0,valSys:0,diffVal:0,stores:new Set()}; rm[k].items++; rm[k].count+=(it.count||0); rm[k].valCount+=(it.count||0)*(it.price||0); rm[k].valSys+=(it.com||0)*(it.price||0); rm[k].diffVal+=(it.diffVal||0); const sKey=it.storeNum||it.store; if(sKey) rm[k].stores.add(sKey); });
   const regs   = Object.entries(rm).sort((a,b)=>a[0].localeCompare(b[0],'th'));
   const maxRV  = Math.max(...regs.map(r=>r[1].valCount),1);
   const rg     = document.getElementById('regional-grid');
-  if (!regs.length) { rg.innerHTML='<div class="empty-state" style="padding:16px;grid-column:1/-1"><p>ยังไม่มีข้อมูล</p></div>'; }
+  if (!regs.length) { rg.innerHTML='<div class="empty-state" style="padding:16px;grid-column:1/-1"><p>ยังไม่มีข้อมูลในช่วงที่เลือก</p></div>'; }
   else {
     rg.innerHTML = regs.map(([name,d],i)=>{
       const rank    = i+1;
@@ -1082,7 +1517,7 @@ function renderDashboard() {
 
   /* Store Ranking */
   const stm={};
-  items.forEach(it=>{ const k=it.store||'(ไม่ระบุ)'; if(!stm[k]) stm[k]={store:k,regional:it.regional||'—',valCount:0,diffVal:0}; stm[k].valCount+=(it.count||0)*(it.price||0); stm[k].diffVal+=(it.diffVal||0); });
+  ds.forEach(it=>{ const k=it.storeNum||it.store||'(ไม่ระบุ)'; if(!stm[k]) stm[k]={store:k,regional:it.regional||'—',valCount:0,diffVal:0}; stm[k].valCount+=(it.count||0)*(it.price||0); stm[k].diffVal+=(it.diffVal||0); });
   const stList   = Object.values(stm).sort((a,b)=>a.diffVal-b.diffVal);
   const maxAbsDV = Math.max(...stList.map(s=>Math.abs(s.diffVal)),1);
   const stb = document.getElementById('store-tbody');
@@ -1109,7 +1544,7 @@ function renderDashboard() {
 
   /* Donut */
   const sc={Match:0,Over:0,Short:0,Pending:0};
-  items.forEach(it=>sc[it.status]=(sc[it.status]||0)+1);
+  ds.forEach(it=>sc[it.status]=(sc[it.status]||0)+1);
   const pctOf = n => total>0?(n/total*100).toFixed(1)+'%':'0%';
   document.getElementById('leg-match').textContent   = sc.Match;
   document.getElementById('leg-over').textContent    = sc.Over;
@@ -1132,6 +1567,73 @@ function renderDashboard() {
   const keys  =['Match','Over','Short','Pending'];
   const r=15.9,cx=18,cy=18,circ=2*Math.PI*r;
   if(total>0){ let off=circ/4; keys.forEach((k,i)=>{ const d=sc[k]/total*circ,seg=document.createElementNS('http://www.w3.org/2000/svg','circle'); seg.setAttribute('cx',cx);seg.setAttribute('cy',cy);seg.setAttribute('r',r);seg.setAttribute('fill','none');seg.setAttribute('stroke',colors[i]);seg.setAttribute('stroke-width','3.8');seg.setAttribute('stroke-dasharray',`${d} ${circ-d}`);seg.setAttribute('stroke-dashoffset',off);seg.setAttribute('transform',`rotate(-90 ${cx} ${cy})`);seg.classList.add('seg');svg.insertBefore(seg,svg.querySelector('text'));off-=d; }); }
+
+  /* ══════════════════════════════════════════
+     TOP 5 — Group by (storeNum + item), sum diffVal
+     เหตุผล: Item เดียวกัน + สาขาเดียวกัน = รายการเดียวกัน
+  ══════════════════════════════════════════ */
+  const grouped = {};
+  ds.forEach(it => {
+    const storeKey = (it.storeNum || it.store || '—').toString().trim();
+    const itemKey  = (it.item || '').toString().trim();
+    if (!itemKey) return;                              // skip rows with no item code
+    const gk = `${storeKey}|||${itemKey}`;            // composite key
+    if (!grouped[gk]) {
+      grouped[gk] = {
+        store    : storeKey,
+        item     : itemKey,
+        desc     : it.desc || '',
+        regional : it.regional || '',
+        diffVal  : 0,
+        rows     : 0,
+      };
+    }
+    grouped[gk].diffVal += (it.diffVal || 0);
+    grouped[gk].rows++;
+    // Keep the most descriptive desc (longest non-empty wins)
+    if ((it.desc||'').length > grouped[gk].desc.length) grouped[gk].desc = it.desc || '';
+  });
+  const groupedList = Object.values(grouped);
+
+  /* helper: render a Top-5 row */
+  const renderTop5Row = (g, i, isNeg) => {
+    const rankCls   = i===0?'top1':i===1?'top2':i===2?'top3':'';
+    const descShort = g.desc.length > 22 ? g.desc.slice(0, 22) + '…' : g.desc;
+    const color     = isNeg ? '#dc2626' : '#059669';
+    const sign      = isNeg ? '' : '+';
+    const rowsLabel = g.rows > 1
+      ? `<span style="font-size:0.63rem;color:var(--text3);margin-left:4px">(${g.rows} รายการ)</span>`
+      : '';
+    return `<tr>
+      <td><span class="rank-badge ${rankCls}">${i+1}</span></td>
+      <td style="font-family:var(--font-mono);font-weight:700;color:var(--accent);font-size:0.78rem">${g.store}</td>
+      <td style="font-weight:600;font-size:0.78rem">${g.item}${rowsLabel}</td>
+      <td style="font-size:0.72rem;color:var(--text3);max-width:110px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${descShort}</td>
+      <td class="r" style="color:${color};font-family:var(--font-mono);font-weight:700;font-size:0.77rem">
+        ${sign}${fmtB(g.diffVal)}
+      </td>
+    </tr>`;
+  };
+
+  /* ── Top 5 Negative (ลบมากสุด) ── */
+  const sortedNeg = groupedList
+    .filter(g => g.diffVal < 0)
+    .sort((a, b) => a.diffVal - b.diffVal)
+    .slice(0, 5);
+  const tnb = document.getElementById('top5-neg-tbody');
+  tnb.innerHTML = sortedNeg.length
+    ? sortedNeg.map((g, i) => renderTop5Row(g, i, true)).join('')
+    : '<tr><td colspan="5"><div class="empty-state" style="padding:12px"><p>ไม่มีรายการ Diff ติดลบ</p></div></td></tr>';
+
+  /* ── Top 5 Positive (บวกมากสุด) ── */
+  const sortedPos = groupedList
+    .filter(g => g.diffVal > 0)
+    .sort((a, b) => b.diffVal - a.diffVal)
+    .slice(0, 5);
+  const tpb = document.getElementById('top5-pos-tbody');
+  tpb.innerHTML = sortedPos.length
+    ? sortedPos.map((g, i) => renderTop5Row(g, i, false)).join('')
+    : '<tr><td colspan="5"><div class="empty-state" style="padding:12px"><p>ไม่มีรายการ Diff เป็นบวก</p></div></td></tr>';
 }
 window.renderDashboard = renderDashboard;
 
